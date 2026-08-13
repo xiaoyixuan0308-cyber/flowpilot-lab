@@ -1,0 +1,625 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["poc"]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ods_dioh_dealer_upn {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dealerlpcode  String
+  dealerlpname  String?
+  upn           String
+  abc_class     String?
+  dioh_days     Decimal   @default(0) @db.Decimal(30, 10)
+  source_system String    @default("MANUAL")
+  insert_dt     DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@unique([dealerlpcode, upn], map: "ux_ods_dioh_dealer_upn")
+  @@schema("poc")
+}
+
+model ods_upn_constraint_manual {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  period_month    DateTime  @db.Date
+  sc_bu           String    @default("DEFAULT")
+  upn             String
+  constraint_type String
+  source_system   String    @default("MANUAL")
+  insert_dt       DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@unique([period_month, sc_bu, upn, constraint_type], map: "ux_ods_upn_constraint_manual")
+  @@schema("poc")
+}
+
+model ods_upn_bundle_manual {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  upn           String    @unique(map: "ux_ods_upn_bundle_manual")
+  bundle_qty    Decimal   @db.Decimal(30, 10)
+  source_system String    @default("MANUAL")
+  insert_dt     DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@schema("poc")
+}
+
+model ods_weekly_amount_threshold_manual {
+  id                      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sc_bu                   String    @unique(map: "ux_ods_weekly_amount_threshold_manual_sc_bu")
+  overage_threshold_pct   Decimal   @db.Decimal(30, 10)
+  shortfall_threshold_pct Decimal   @db.Decimal(30, 10)
+  source_system           String    @default("MANUAL")
+  insert_dt               DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@schema("poc")
+}
+
+model ods_fcst_lp_pl5_monthly {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dealerlpcode  String
+  dealerlpname  String?
+  sc_bu         String
+  pl5_code      String
+  pl5_name      String?
+  fcst_qty      Decimal   @default(0) @db.Decimal(30, 10)
+  year          String
+  month         String
+  source_system String    @default("MANUAL")
+  insert_dt     DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@unique([sc_bu, dealerlpcode, pl5_code, year, month], map: "ux_ods_fcst_lp_pl5_monthly")
+  @@schema("poc")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ods_fcst_t2_pl5_monthly {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  parentdealerlpcode String?
+  parentdealerlpname String?
+  sc_bu              String
+  pl5_code           String
+  pl5_name           String?
+  fcst_qty           Decimal   @default(0) @db.Decimal(30, 10)
+  year               String
+  month              String
+  source_system      String    @default("MANUAL")
+  insert_dt          DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@unique([sc_bu, parentdealerlpcode, pl5_code, year, month], map: "ux_ods_fcst_t2_pl5_monthly")
+  @@schema("poc")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ods_inventory_dealer_upn {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dealerlpcode  String
+  dealerlpname  String?
+  upn           String
+  qty           Decimal   @default(0) @db.Decimal(30, 10)
+  year          String
+  month         String
+  source_system String    @default("DW")
+  insert_dt     DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@unique([dealerlpcode, upn, year, month], map: "ux_ods_inventory_dealer_upn")
+  @@schema("poc")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ods_lp_pl5_allocate_monthly {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  period_month  DateTime  @db.Date
+  dealerlpcode  String
+  dealerlpname  String?
+  pl5_code      String
+  pl5_name      String?
+  allocate_qty  Decimal   @default(0) @db.Decimal(30, 10)
+  source_system String    @default("CUSTOMER_DW")
+  insert_dt     DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@unique([period_month, dealerlpcode, pl5_code, source_system], map: "ux_ods_lp_pl5_allocate_monthly")
+  @@index([period_month, dealerlpcode], map: "ix_ods_lp_pl5_allocate_monthly_lp")
+  @@index([period_month, pl5_code], map: "ix_ods_lp_pl5_allocate_monthly_pl5")
+  @@schema("poc")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ods_t2_purchase_monthly {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  parentdealerlpcode String?
+  parentdealerlpname String?
+  sc_bu              String
+  upn                String
+  pl5_code           String
+  pl5_name           String?
+  year               String
+  month              String
+  qty                Decimal   @default(0) @db.Decimal(30, 10)
+  source_system      String    @default("DW")
+  insert_dt          DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@unique([sc_bu, parentdealerlpcode, pl5_code, upn, year, month], map: "ux_ods_t2_purchase_monthly")
+  @@schema("poc")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ods_upn_active_list {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dealerlpcode  String?
+  dealerlpname  String?
+  pl5_code      String
+  pl5_name      String?
+  upn           String
+  year          String
+  month         String
+  source_system String    @default("Inventory")
+  insert_dt     DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@unique([id, dealerlpcode, upn, year, month], map: "ux_ods_upn_active_list")
+  @@schema("poc")
+}
+
+model ods_dealer_upn_dn {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_on    DateTime? @db.Date
+  sold_to_pt    String?
+  sc_bu         String
+  dealer_type   String
+  material      String?
+  delivery_qty  Decimal   @default(0) @db.Decimal(30, 10)
+  source_system String    @default("FOMS")
+  insert_dt     DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@index([sold_to_pt, material, created_on], map: "ix_ods_dealer_upn_dn_sold_to_material")
+  @@index([material], map: "ix_ods_dealer_upn_dn_material")
+  @@schema("poc")
+}
+
+model ods_dealer_upn_open_order {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  material      String?
+  customer      String?
+  sc_bu         String
+  dealer_type   String?
+  dctp          String?
+  open_qty      Decimal   @default(0) @db.Decimal(30, 10)
+  source_system String    @default("FOMS")
+  insert_dt     DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@index([customer, dctp], map: "ix_ods_dealer_upn_open_order_customer_dctp")
+  @@index([material], map: "ix_ods_dealer_upn_open_order_material")
+  @@schema("poc")
+}
+
+model ods_bsc_upn_inventory {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  material         String
+  sloc             String?
+  unrestricted_qty Decimal   @default(0) @db.Decimal(30, 10)
+  source_system    String    @default("FOMS")
+  insert_dt        DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@index([material, sloc], map: "ix_ods_bsc_upn_inventory_material_sloc")
+  @@schema("poc")
+}
+
+model ods_bsc_upn_intransit {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  material      String
+  intransit_qty Decimal   @default(0) @db.Decimal(30, 10)
+  forecast_date DateTime? @db.Date
+  source_system String    @default("FOMS")
+  insert_dt     DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@index([material, forecast_date], map: "ix_ods_bsc_upn_intransit_material_forecast")
+  @@schema("poc")
+}
+
+model ods_lp_upn_purchase_price {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dealer_code            String
+  dealer_type            String
+  upn                    String
+  bsc_std_sell_price     Decimal?  @db.Decimal(30, 10)
+  bsc_std_sell_price_vat Decimal?  @db.Decimal(30, 10)
+  source_sell_price      Decimal?  @db.Decimal(30, 10)
+  source_sell_price_vat  Decimal?  @db.Decimal(30, 10)
+  source_currency        String    @default("USD")
+  usd_to_cny_rate        Decimal   @default(7.15) @db.Decimal(30, 10)
+  source_system          String    @default("FOMS")
+  insert_dt              DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@unique([dealer_code, dealer_type, upn], map: "ux_ods_lp_upn_purchase_price_dealer_type_upn")
+  @@schema("poc")
+}
+
+model ods_upn_safety_stock_manual {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  upn              String
+  safety_stock_qty Decimal   @default(5) @db.Decimal(30, 10)
+  source_system    String    @default("MANUAL")
+  insert_dt        DateTime? @default(dbgenerated("(now() + '08:00:00'::interval)")) @db.Timestamp(6)
+
+  @@unique([upn], map: "ux_ods_upn_safety_stock_manual_upn")
+  @@schema("poc")
+}
+
+model ods_calendar_pattern_weekly {
+  id                       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sc_bu                    String
+  period_month             DateTime  @db.Date
+  month_start_date         DateTime  @db.Date
+  week_start_date          DateTime  @db.Date
+  week_end_date            DateTime  @db.Date
+  prev_week_pattern_pct    Decimal?  @db.Decimal(30, 10)
+  current_week_pattern_pct Decimal?  @db.Decimal(30, 10)
+  source_system            String    @default("MANUAL")
+  insert_dt                DateTime? @default(now()) @db.Timestamp(6)
+
+  @@unique([week_start_date, sc_bu], map: "ux_ods_calendar_pattern_weekly_week_bu")
+  @@index([period_month], map: "ix_ods_calendar_pattern_weekly_period_month")
+  @@index([week_start_date, week_end_date], map: "ix_ods_calendar_pattern_weekly_week_range")
+  @@schema("poc")
+}
+
+model ods_bu_pattern_amount_weekly {
+  id                         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  period_week                DateTime  @db.Date
+  period_month               DateTime  @db.Date
+  sc_bu                      String
+  actual_amount              Decimal?  @db.Decimal(30, 10)
+  month_target_amount        Decimal   @default(0) @db.Decimal(30, 10)
+  month_limit_amount         Decimal   @default(0) @db.Decimal(30, 10)
+  source_actual_amount       Decimal?  @db.Decimal(30, 10)
+  source_month_target_amount Decimal   @default(0) @db.Decimal(30, 10)
+  source_month_limit_amount  Decimal   @default(0) @db.Decimal(30, 10)
+  source_currency            String    @default("USD")
+  usd_to_cny_rate            Decimal   @default(7.15) @db.Decimal(30, 10)
+  source_system              String    @default("FOMS")
+  insert_dt                  DateTime? @default(now()) @db.Timestamp(6)
+
+  @@unique([period_week, sc_bu], map: "ux_ods_bu_pattern_amount_weekly_period_week_bu")
+  @@index([period_month], map: "ix_ods_bu_pattern_amount_weekly_period_month")
+  @@schema("poc")
+}
+
+model app_exchange_rate {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  base_currency  String    @default("USD")
+  quote_currency String    @default("CNY")
+  rate           Decimal   @db.Decimal(30, 10)
+  is_active      Boolean   @default(true)
+  effective_at   DateTime  @default(now()) @db.Timestamp(6)
+  source_system  String    @default("MANUAL")
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([base_currency, quote_currency, is_active, effective_at], map: "ix_app_exchange_rate_current")
+  @@schema("poc")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model bridge_lp_pl5_scope_monthly {
+  period_month DateTime  @db.Date
+  sc_bu        String
+  lp_code      String
+  lp_name      String?
+  pl5_code     String
+  pl5_name     String?
+  scope_source String
+  insert_dt    DateTime? @default(now()) @db.Timestamp(6)
+
+  @@id([period_month, sc_bu, lp_code, pl5_code], map: "pk_bridge_lp_pl5_scope_monthly")
+  @@schema("poc")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model bridge_pl5_upn_scope_monthly {
+  period_month DateTime  @db.Date
+  sc_bu        String
+  pl5_code     String
+  pl5_name     String?
+  upn          String
+  upn_source   String
+  insert_dt    DateTime? @default(now()) @db.Timestamp(6)
+
+  @@id([period_month, sc_bu, pl5_code, upn], map: "pk_bridge_pl5_upn_scope_monthly")
+  @@schema("poc")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model list_lp_pl5_status_monthly {
+  period_month      DateTime  @db.Date
+  sc_bu             String
+  lp_code           String
+  lp_name           String?
+  pl5_code          String
+  pl5_name          String?
+  has_quota         Boolean   @default(false)
+  has_history       Boolean   @default(false)
+  quota_qty         Decimal?  @db.Decimal(30, 10)
+  history_qty_m6_m1 Decimal?  @db.Decimal(30, 10)
+  status_note       String?
+  error_id          String?   @db.Uuid
+  insert_dt         DateTime? @default(now()) @db.Timestamp(6)
+
+  error_catalog upn_split_error_catalog? @relation("lp_pl5_status_error", fields: [error_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([period_month, sc_bu, lp_code, pl5_code], map: "pk_list_lp_pl5_status_monthly")
+  @@schema("poc")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model list_lp_pl5_upn_status_monthly {
+  period_month      DateTime  @db.Date
+  sc_bu             String
+  lp_code           String
+  lp_name           String?
+  pl5_code          String
+  pl5_name          String?
+  upn               String
+  has_quota         Boolean   @default(false)
+  has_history       Boolean   @default(false)
+  quota_qty         Decimal?  @db.Decimal(30, 10)
+  history_qty_m6_m1 Decimal?  @db.Decimal(30, 10)
+  status_note       String?
+  error_id          String?   @db.Uuid
+  insert_dt         DateTime? @default(now()) @db.Timestamp(6)
+
+  error_catalog upn_split_error_catalog? @relation("lp_pl5_upn_status_error", fields: [error_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([period_month, sc_bu, lp_code, pl5_code, upn], map: "pk_list_lp_pl5_upn_status_monthly")
+  @@schema("poc")
+}
+
+model calc_batch {
+  id            String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  period_month  DateTime                @db.Date
+  status        String                  @default("SUCCESS")
+  total_upns    Int                     @default(0)
+  error_upns    Int                     @default(0)
+  calculated_at DateTime?               @db.Timestamp(6)
+  created_at    DateTime?               @default(now()) @db.Timestamp(6)
+  results       calc_upn_split_result[]
+  traces        calc_upn_split_trace[]
+
+  @@schema("poc")
+}
+
+model calc_runtime_setting {
+  id            String   @id @default("CURRENT")
+  calendar_date DateTime @db.Date
+  updated_at    DateTime @default(now()) @db.Timestamp(6)
+
+  @@schema("poc")
+}
+
+model calc_weekly_upn_split_batch {
+  id                                String                             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  period_month                      DateTime                           @db.Date
+  calendar_date                     DateTime                           @db.Date
+  source_batch_id                   String?                            @db.Uuid
+  month_quota_strategy              String                             @default("s_tolerance_replenish")
+  pattern_strategy                  String                             @default("current_week_pattern_pct")
+  status                            String                             @default("SUCCESS")
+  total_rows                        Int                                @default(0)
+  total_upns                        Int                                @default(0)
+  current_week_pattern_pct          Decimal?                           @db.Decimal(30, 10)
+  month_le_amount                   Decimal?                           @db.Decimal(30, 10)
+  actual_amount                     Decimal?                           @db.Decimal(30, 10)
+  week_pattern_amount               Decimal?                           @db.Decimal(30, 10)
+  target_pending_amount             Decimal?                           @db.Decimal(30, 10)
+  suggested_amount_total            Decimal?                           @db.Decimal(30, 10)
+  week_pattern_gap_amount           Decimal?                           @db.Decimal(30, 10)
+  week_pattern_gap_pct              Decimal?                           @db.Decimal(30, 10)
+  overage_threshold_pct             Decimal                            @default(0.05) @db.Decimal(30, 10)
+  shortfall_threshold_pct           Decimal                            @default(0.05) @db.Decimal(30, 10)
+  system_default_final_amount_total Decimal?                           @db.Decimal(30, 10)
+  system_default_pattern_gap_amount Decimal?                           @db.Decimal(30, 10)
+  final_amount_total                Decimal?                           @db.Decimal(30, 10)
+  final_pattern_gap_amount          Decimal?                           @db.Decimal(30, 10)
+  calculation_currency              String                             @default("USD")
+  usd_to_cny_rate                   Decimal                            @default(7.15) @db.Decimal(30, 10)
+  calculated_at                     DateTime?                          @db.Timestamp(6)
+  created_at                        DateTime?                          @default(now()) @db.Timestamp(6)
+  results                           calc_weekly_upn_split_result[]
+  bu_summaries                      calc_weekly_upn_split_bu_summary[]
+
+  @@index([period_month, calendar_date], map: "ix_calc_weekly_upn_split_batch_period")
+  @@schema("poc")
+}
+
+model calc_weekly_upn_split_bu_summary {
+  id                                String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  batch_id                          String                      @db.Uuid
+  sc_bu                             String
+  current_week_pattern_pct          Decimal?                    @db.Decimal(30, 10)
+  month_target_amount               Decimal?                    @db.Decimal(30, 10)
+  actual_amount                     Decimal?                    @db.Decimal(30, 10)
+  week_pattern_amount               Decimal?                    @db.Decimal(30, 10)
+  target_pending_amount             Decimal?                    @db.Decimal(30, 10)
+  suggested_amount_total            Decimal?                    @db.Decimal(30, 10)
+  week_pattern_gap_amount           Decimal?                    @db.Decimal(30, 10)
+  week_pattern_gap_pct              Decimal?                    @db.Decimal(30, 10)
+  overage_threshold_pct             Decimal                     @default(0.05) @db.Decimal(30, 10)
+  shortfall_threshold_pct           Decimal                     @default(0.05) @db.Decimal(30, 10)
+  system_default_final_amount_total Decimal?                    @db.Decimal(30, 10)
+  system_default_pattern_gap_amount Decimal?                    @db.Decimal(30, 10)
+  final_amount_total                Decimal?                    @db.Decimal(30, 10)
+  final_pattern_gap_amount          Decimal?                    @db.Decimal(30, 10)
+  created_at                        DateTime?                   @default(now()) @db.Timestamp(6)
+  batch                             calc_weekly_upn_split_batch @relation(fields: [batch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([batch_id, sc_bu], map: "ux_calc_weekly_upn_split_bu_summary_batch_bu")
+  @@index([sc_bu], map: "ix_calc_weekly_upn_split_bu_summary_bu")
+  @@schema("poc")
+}
+
+model calc_weekly_upn_split_result {
+  id                                   String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  batch_id                             String                      @db.Uuid
+  sc_bu                                String
+  lp_code                              String
+  pl5_code                             String
+  upn                                  String
+  month_quota_qty                      Decimal?                    @db.Decimal(30, 10)
+  current_week_pattern_pct             Decimal?                    @db.Decimal(30, 10)
+  aa_month_delivered_suggestion_pct    Decimal?                    @db.Decimal(30, 10)
+  ab_current_inventory_days            Decimal?                    @db.Decimal(30, 10)
+  bb_upn_abc_class                     String?
+  be_original_target_inventory_qty     Decimal?                    @db.Decimal(30, 10)
+  bf_current_inventory_qty             Decimal?                    @db.Decimal(30, 10)
+  bj_t2_purchase_3m_avg_qty            Decimal?                    @db.Decimal(30, 10)
+  cc_prev_week_pattern_pct             Decimal?                    @db.Decimal(30, 10)
+  g_week_quota_pattern_total_qty       Decimal?                    @db.Decimal(30, 10)
+  month_delivered_qty                  Decimal?                    @db.Decimal(30, 10)
+  n_other_dealer_month_delivered_qty   Decimal?                    @db.Decimal(30, 10)
+  o_month_delivered_total_qty          Decimal?                    @db.Decimal(30, 10)
+  open_order_or_qty                    Decimal?                    @db.Decimal(30, 10)
+  other_dealer_open_order_or_qty       Decimal?                    @db.Decimal(30, 10)
+  s_open_order_or_total_qty            Decimal?                    @db.Decimal(30, 10)
+  t_open_order_non_or_qty              Decimal?                    @db.Decimal(30, 10)
+  v_other_dealer_open_order_non_or_qty Decimal?                    @db.Decimal(30, 10)
+  w_open_order_non_or_total_qty        Decimal?                    @db.Decimal(30, 10)
+  x_open_order_total_qty               Decimal?                    @db.Decimal(30, 10)
+  bsc_inventory_qty                    Decimal?                    @db.Decimal(30, 10)
+  intransit_qty                        Decimal?                    @db.Decimal(30, 10)
+  safety_stock_qty                     Decimal?                    @db.Decimal(30, 10)
+  bsc_available_qty                    Decimal?                    @db.Decimal(30, 10)
+  week_quota_pattern_qty               Decimal?                    @db.Decimal(30, 10)
+  week_target_pending_qty              Decimal?                    @db.Decimal(30, 10)
+  week_target_pending_total_qty        Decimal?                    @db.Decimal(30, 10)
+  inventory_status                     String?
+  suggest_qty                          Decimal?                    @db.Decimal(30, 10)
+  remaining_bsc_available_qty          Decimal?                    @db.Decimal(30, 10)
+  target_inventory_adjustable_qty      Decimal?                    @db.Decimal(30, 10)
+  post_suggest_dioh                    Decimal?                    @db.Decimal(30, 10)
+  unit_price                           Decimal?                    @db.Decimal(30, 10)
+  suggest_amount                       Decimal?                    @db.Decimal(30, 10)
+  system_adjusted_suggest_qty          Decimal?                    @db.Decimal(30, 10)
+  upn_month_cap_qty                    Decimal?                    @db.Decimal(30, 10)
+  constraint_types                     String?
+  adjustment_allowed_flag              String?
+  monthly_remaining_adjustable_qty     Decimal?                    @db.Decimal(30, 10)
+  bundle_qty                           Decimal?                    @db.Decimal(30, 10)
+  gap_fill_qty                         Decimal?                    @db.Decimal(30, 10)
+  post_gap_fill_qty                    Decimal?                    @db.Decimal(30, 10)
+  system_default_final_qty             Decimal?                    @db.Decimal(30, 10)
+  manual_final_qty                     Decimal?                    @db.Decimal(30, 10)
+  final_qty                            Decimal?                    @db.Decimal(30, 10)
+  final_amount                         Decimal?                    @db.Decimal(30, 10)
+  created_at                           DateTime?                   @default(now()) @db.Timestamp(6)
+  batch                                calc_weekly_upn_split_batch @relation(fields: [batch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([batch_id], map: "ix_calc_weekly_upn_split_result_batch_id")
+  @@index([batch_id, sc_bu], map: "ix_calc_weekly_upn_split_result_batch_bu")
+  @@index([batch_id, pl5_code], map: "ix_calc_weekly_upn_split_result_batch_pl5")
+  @@schema("poc")
+}
+
+model calc_upn_split_result {
+  id                          String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  batch_id                    String                   @db.Uuid
+  sc_bu                       String
+  dealerlpcode                String
+  upn                         String
+  pl5_code                    String
+  lp_code                     String?
+  e_t2_mix_portion            Decimal?                 @db.Decimal(30, 10)
+  f_t2_purchase_3m_avg        Decimal?                 @db.Decimal(30, 10)
+  g_t2_purchase_m0            Decimal?                 @db.Decimal(30, 10)
+  h_t2_purchase_mtd           Decimal?                 @db.Decimal(30, 10)
+  i_t2_purchase_mtg           Decimal?                 @db.Decimal(30, 10)
+  j_opening_inventory         Decimal?                 @db.Decimal(30, 10)
+  k_target_days               Decimal?                 @db.Decimal(30, 10)
+  l_tolerance                 Boolean?
+  i_star_pl5_mtg              Decimal?                 @db.Decimal(30, 10)
+  j_star_pl5_inventory        Decimal?                 @db.Decimal(30, 10)
+  x_after_allocate_days       Decimal?                 @db.Decimal(30, 10)
+  m_original_target_inventory Decimal?                 @db.Decimal(30, 10)
+  n_new_target_inventory      Decimal?                 @db.Decimal(30, 10)
+  o_final_target_inventory    Decimal?                 @db.Decimal(30, 10)
+  p_theoretical_replenish     Decimal?                 @db.Decimal(30, 10)
+  q_actual_theoretical        Decimal?                 @db.Decimal(30, 10)
+  q_star_pl5_theoretical      Decimal?                 @db.Decimal(30, 10)
+  w_mtg_allocate_qty          Decimal?                 @db.Decimal(30, 10)
+  r_base_replenish            Decimal?                 @db.Decimal(30, 10)
+  s_tolerance_replenish       Decimal?                 @db.Decimal(30, 10)
+  t_adjusted_dioh             Decimal?                 @db.Decimal(30, 10)
+  current_dioh                Decimal?                 @db.Decimal(30, 10)
+  replenish_gap_to_30_qty     Decimal?                 @db.Decimal(30, 10)
+  is_error                    Boolean                  @default(false)
+  error_message               String?
+  error_id                    String?                  @db.Uuid
+  created_at                  DateTime?                @default(now()) @db.Timestamp(6)
+  batch                       calc_batch               @relation(fields: [batch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  error_catalog               upn_split_error_catalog? @relation("calc_result_error", fields: [error_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([batch_id], map: "ix_calc_upn_split_result_batch_id")
+  @@schema("poc")
+}
+
+model calc_upn_split_trace {
+  id                          String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  batch_id                    String                   @db.Uuid
+  period_month                DateTime                 @db.Date
+  sc_bu                       String
+  dealerlpcode                String
+  pl5_code                    String
+  upn                         String
+  lp_code                     String?
+  h_t2_purchase_mtd           Decimal?                 @db.Decimal(30, 10)
+  e_t2_mix_portion            Decimal?                 @db.Decimal(30, 10)
+  t_pl5_purchase_m2           Decimal?                 @db.Decimal(30, 10)
+  u_pl5_purchase_m1           Decimal?                 @db.Decimal(30, 10)
+  v_pl5_purchase_m0_fcst      Decimal?                 @db.Decimal(30, 10)
+  f_t2_purchase_3m_avg        Decimal?                 @db.Decimal(30, 10)
+  g_t2_purchase_m0            Decimal?                 @db.Decimal(30, 10)
+  j_opening_inventory         Decimal?                 @db.Decimal(30, 10)
+  k_target_days               Decimal?                 @db.Decimal(30, 10)
+  l_tolerance                 Boolean?
+  i_t2_purchase_mtg           Decimal?                 @db.Decimal(30, 10)
+  current_dioh                Decimal?                 @db.Decimal(30, 10)
+  replenish_gap_to_30_qty     Decimal?                 @db.Decimal(30, 10)
+  w_mtg_allocate_qty          Decimal?                 @db.Decimal(30, 10)
+  j_star_pl5_inventory        Decimal?                 @db.Decimal(30, 10)
+  i_star_pl5_mtg              Decimal?                 @db.Decimal(30, 10)
+  x_after_allocate_days       Decimal?                 @db.Decimal(30, 10)
+  m_original_target_inventory Decimal?                 @db.Decimal(30, 10)
+  n_new_target_inventory      Decimal?                 @db.Decimal(30, 10)
+  o_final_target_inventory    Decimal?                 @db.Decimal(30, 10)
+  p_theoretical_replenish     Decimal?                 @db.Decimal(30, 10)
+  q_actual_theoretical        Decimal?                 @db.Decimal(30, 10)
+  q_star_pl5_theoretical      Decimal?                 @db.Decimal(30, 10)
+  r_base_replenish            Decimal?                 @db.Decimal(30, 10)
+  s_tolerance_replenish       Decimal?                 @db.Decimal(30, 10)
+  t_adjusted_dioh             Decimal?                 @db.Decimal(30, 10)
+  is_error                    Boolean                  @default(false)
+  error_message               String?
+  error_id                    String?                  @db.Uuid
+  created_at                  DateTime?                @default(now()) @db.Timestamp(6)
+  batch                       calc_batch               @relation(fields: [batch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  error_catalog               upn_split_error_catalog? @relation("calc_trace_error", fields: [error_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([batch_id, dealerlpcode, pl5_code, upn], map: "ux_calc_upn_split_trace_batch_row")
+  @@index([batch_id], map: "ix_calc_upn_split_trace_batch_id")
+  @@schema("poc")
+}
+
+model upn_split_error_catalog {
+  id               String    @id @db.Uuid
+  error_code       String    @unique
+  error_message    String
+  should_skip_calc Boolean   @default(false)
+  insert_dt        DateTime? @default(now()) @db.Timestamp(6)
+
+  lp_pl5_status_rows     list_lp_pl5_status_monthly[]     @relation("lp_pl5_status_error")
+  lp_pl5_upn_status_rows list_lp_pl5_upn_status_monthly[] @relation("lp_pl5_upn_status_error")
+  calc_result_rows       calc_upn_split_result[]          @relation("calc_result_error")
+  calc_trace_rows        calc_upn_split_trace[]           @relation("calc_trace_error")
+
+  @@schema("poc")
+}

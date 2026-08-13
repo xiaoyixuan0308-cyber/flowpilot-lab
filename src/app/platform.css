@@ -1,0 +1,39 @@
+:root {
+  --background: oklch(0.982 0.008 250);
+  --foreground: oklch(0.255 0.035 257);
+  --card: oklch(1 0 0 / 96%);
+  --card-foreground: oklch(0.255 0.035 257);
+  --popover: oklch(1 0 0 / 98%);
+  --popover-foreground: oklch(0.255 0.035 257);
+  --primary: oklch(0.49 0.165 254);
+  --primary-foreground: oklch(0.99 0.004 250);
+  --secondary: oklch(0.94 0.025 249);
+  --secondary-foreground: oklch(0.31 0.055 257);
+  --muted: oklch(0.955 0.016 250);
+  --muted-foreground: oklch(0.49 0.035 255);
+  --accent: oklch(0.925 0.04 247);
+  --accent-foreground: oklch(0.36 0.12 255);
+  --border: oklch(0.875 0.025 250 / 85%);
+  --input: oklch(0.855 0.028 250 / 90%);
+  --ring: oklch(0.56 0.15 254);
+  --sidebar: oklch(0.985 0.01 252);
+  --sidebar-foreground: oklch(0.28 0.04 257);
+  --sidebar-primary: oklch(0.49 0.165 254);
+  --sidebar-primary-foreground: oklch(0.99 0.004 250);
+  --sidebar-accent: oklch(0.93 0.035 248);
+  --sidebar-accent-foreground: oklch(0.37 0.12 255);
+  --sidebar-border: oklch(0.875 0.025 250 / 85%);
+  --sidebar-ring: oklch(0.56 0.15 254);
+}
+
+body {
+  background-image:
+    radial-gradient(circle at 90% 0%, color-mix(in oklab, var(--primary) 7%, transparent) 0, transparent 28rem),
+    linear-gradient(180deg, color-mix(in oklab, white 55%, transparent), transparent 18rem);
+}
+
+.surface-card {
+  border: 1px solid color-mix(in oklab, var(--border) 88%, transparent);
+  background: color-mix(in oklab, var(--card) 96%, transparent);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 32px rgba(15, 23, 42, 0.035);
+}

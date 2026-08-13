@@ -1,0 +1,65 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log
+*.err.log
+*.out.log
+
+# local codex/runtime artifacts
+.codex-logs/
+
+# local html snapshots / manual exports
+calc-results.html
+calc-result-detail.html
+lp-pl5-status.html
+lp-pl5-upn-status.html
+outputs/
+
+# local test input/output artifacts
+test-artifacts/
+upn2-*.xlsx
+upn2-*.json
+upn2-dev-*.log
+
+# env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
