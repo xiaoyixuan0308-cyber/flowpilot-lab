@@ -8,8 +8,8 @@
     "start": "next start -p 3011",
     "lint": "eslint",
     "week-boundary:smoke": "npx tsx ./scripts/month-week-smoke.ts",
-    "scbu-budget:build-fixture": "node ./scripts/build-scbu-budget-validation.mjs",
-    "scbu-budget:smoke": "npx tsx ./scripts/scbu-budget-validation-smoke.ts"
+    "business-unit-budget:build-fixture": "node ./scripts/build-business-unit-budget-validation.mjs",
+    "business-unit-budget:smoke": "npx tsx ./scripts/business-unit-budget-validation-smoke.ts"
     ,"demo:audit": "tsx ./scripts/audit-demo-coverage.ts"
   },
   "dependencies": {

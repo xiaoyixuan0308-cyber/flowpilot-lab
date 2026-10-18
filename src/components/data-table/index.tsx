@@ -84,9 +84,9 @@ export interface DataTableProps<T> {
 export interface ResultDimensionFilterConfig<T> {
   keys: {
     bu: keyof T & string;
-    lp: keyof T & string;
-    pl5: keyof T & string;
-    upn: keyof T & string;
+    channel: keyof T & string;
+    category: keyof T & string;
+    sku: keyof T & string;
   };
   labelKeys?: Partial<Record<keyof ResultDimensionValues, keyof T & string>>;
   initialValues?: Partial<ResultDimensionValues>;
@@ -94,7 +94,7 @@ export interface ResultDimensionFilterConfig<T> {
 
 const pageSizeOptions = [10, 30, 60, 100];
 const commonSearchFieldPattern =
-  /(code|name|upn|material|customer|sold_to|sapid|date|period|year|month|sloc|division|product_type|sc_bu|currency)/i;
+  /(code|name|sku|material|customer|sold_to|sapid|date|period|year|month|sloc|division|product_type|business_unit|currency)/i;
 
 function buildAutoFilterOptions<T extends Record<string, unknown>>(
   rows: T[],
@@ -181,9 +181,9 @@ export function DataTable<T extends Record<string, unknown>>({
   const [currentPage, setCurrentPage] = useState(1);
   const [dimensionValues, setDimensionValues] = useState<ResultDimensionValues>({
     bu: dimensionFilters?.initialValues?.bu ?? "",
-    lp: dimensionFilters?.initialValues?.lp ?? "",
-    pl5: dimensionFilters?.initialValues?.pl5 ?? "",
-    upn: dimensionFilters?.initialValues?.upn ?? "",
+    channel: dimensionFilters?.initialValues?.channel ?? "",
+    category: dimensionFilters?.initialValues?.category ?? "",
+    sku: dimensionFilters?.initialValues?.sku ?? "",
   });
 
   function rowMatchesDimensions(
@@ -220,13 +220,13 @@ export function DataTable<T extends Record<string, unknown>>({
   const dimensionCandidates = useMemo(
     () => ({
       bu: buildDimensionOptions("bu"),
-      lp: buildDimensionOptions("lp"),
-      pl5: buildDimensionOptions("pl5"),
-      upn: buildDimensionOptions("upn"),
+      channel: buildDimensionOptions("channel"),
+      category: buildDimensionOptions("category"),
+      sku: buildDimensionOptions("sku"),
     }),
     // 数据和三个精确条件变化时重新计算候选范围。
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data, dimensionFilters, dimensionValues.bu, dimensionValues.lp, dimensionValues.pl5, dimensionValues.upn],
+    [data, dimensionFilters, dimensionValues.bu, dimensionValues.channel, dimensionValues.category, dimensionValues.sku],
   );
 
   function updateDimensionValues(nextValues: ResultDimensionValues) {
@@ -234,7 +234,7 @@ export function DataTable<T extends Record<string, unknown>>({
     resetToFirstPage();
 
     const params = new URLSearchParams(window.location.search);
-    for (const key of ["bu", "lp", "pl5", "upn"] as const) {
+    for (const key of ["bu", "channel", "category", "sku"] as const) {
       if (nextValues[key]) params.set(key, nextValues[key]);
       else params.delete(key);
     }
@@ -310,10 +310,10 @@ export function DataTable<T extends Record<string, unknown>>({
     }
   }
   if (dimensionFilters) {
-    if (dimensionValues.bu) exportSearchParams.set("sc_bu", dimensionValues.bu);
-    if (dimensionValues.lp) exportSearchParams.set("lp_code", dimensionValues.lp);
-    if (dimensionValues.pl5) exportSearchParams.set("pl5_code", dimensionValues.pl5);
-    if (dimensionValues.upn) exportSearchParams.set("upn", dimensionValues.upn);
+    if (dimensionValues.bu) exportSearchParams.set("business_unit", dimensionValues.bu);
+    if (dimensionValues.channel) exportSearchParams.set("channel_code", dimensionValues.channel);
+    if (dimensionValues.category) exportSearchParams.set("category_code", dimensionValues.category);
+    if (dimensionValues.sku) exportSearchParams.set("sku", dimensionValues.sku);
   }
 
   const filtered = data.filter((row) => {
@@ -364,7 +364,7 @@ export function DataTable<T extends Record<string, unknown>>({
       onChange={(key, value) =>
         updateDimensionValues({ ...dimensionValues, [key]: value })
       }
-      onClearAll={() => updateDimensionValues({ bu: "", lp: "", pl5: "", upn: "" })}
+      onClearAll={() => updateDimensionValues({ bu: "", channel: "", category: "", sku: "" })}
     />
   ) : null;
 

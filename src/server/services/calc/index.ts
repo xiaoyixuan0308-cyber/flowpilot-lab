@@ -1,2 +1,2 @@
-export * from "./monthly-upn-split";
-export * from "./weekly-upn-split";
+export * from "./monthly-sku-split";
+export * from "./weekly-sku-split";

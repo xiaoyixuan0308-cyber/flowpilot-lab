@@ -21,24 +21,24 @@ interface FinalAdjustmentRow extends WeeklyStageTableRow {
   unit_price: string | null;
   suggest_qty: string | null;
   bundle_qty: string | null;
-  remaining_bsc_available_qty: string | null;
+  remaining_central_warehouse_available_qty: string | null;
   target_inventory_adjustable_qty: string | null;
   monthly_remaining_adjustable_qty: string | null;
   other_dealer_open_order_or_qty: string | null;
-  bsc_available_qty: string | null;
+  central_warehouse_available_qty: string | null;
 }
 
 interface WeeklyFinalAdjustmentTableProps {
   calendarDate: string;
   batchId: string;
   buSummaries: Array<{
-    scBu: string;
+    businessUnit: string;
     targetPendingAmount: string | null;
     systemDefaultFinalAmountTotal: string | null;
     systemDefaultPatternGapAmount: string | null;
   }>;
   rows: FinalAdjustmentRow[];
-  initialFilters: { bu?: string; lp?: string; pl5?: string; upn?: string };
+  initialFilters: { bu?: string; channel?: string; category?: string; sku?: string };
 }
 
 interface PreviewRow extends FinalAdjustmentRow {
@@ -115,7 +115,7 @@ export function WeeklyFinalAdjustmentTable({
           softWarnings.push(`不是套包${formatDecimal(row.bundle_qty)}的整数倍`);
         }
         for (const [label, value] of [
-          ["BH", row.remaining_bsc_available_qty],
+          ["BH", row.remaining_central_warehouse_available_qty],
           ["BI", row.target_inventory_adjustable_qty],
           ["BL", row.monthly_remaining_adjustable_qty],
         ] as const) {
@@ -126,25 +126,25 @@ export function WeeklyFinalAdjustmentTable({
       return { ...row, previewFinalQty, previewFinalAmount, hardError: parsed.error, softWarnings };
     });
 
-    const rowsByUpn = new Map<string, PreviewRow[]>();
+    const rowsBySku = new Map<string, PreviewRow[]>();
     for (const row of previewRows) {
-      const group = rowsByUpn.get(row.upn) ?? [];
+      const group = rowsBySku.get(row.sku) ?? [];
       group.push(row);
-      rowsByUpn.set(row.upn, group);
+      rowsBySku.set(row.sku, group);
     }
-    for (const upnRows of rowsByUpn.values()) {
-      if (!upnRows.some((row) => (drafts[row.id] ?? "").trim() !== "")) continue;
-      if (upnRows.some((row) => row.previewFinalQty === null)) continue;
-      const total = upnRows.reduce((sum, row) => sum.plus(row.previewFinalQty!), new Decimal(0));
-      const other = upnRows.find((row) => row.other_dealer_open_order_or_qty !== null)?.other_dealer_open_order_or_qty;
-      const available = upnRows.find((row) => row.bsc_available_qty !== null)?.bsc_available_qty;
+    for (const skuRows of rowsBySku.values()) {
+      if (!skuRows.some((row) => (drafts[row.id] ?? "").trim() !== "")) continue;
+      if (skuRows.some((row) => row.previewFinalQty === null)) continue;
+      const total = skuRows.reduce((sum, row) => sum.plus(row.previewFinalQty!), new Decimal(0));
+      const other = skuRows.find((row) => row.other_dealer_open_order_or_qty !== null)?.other_dealer_open_order_or_qty;
+      const available = skuRows.find((row) => row.central_warehouse_available_qty !== null)?.central_warehouse_available_qty;
       if (other != null && available != null && total.plus(other).gt(available)) {
-        for (const row of upnRows) row.softWarnings.push("同一SKU共享库存可能超限");
+        for (const row of skuRows) row.softWarnings.push("同一SKU共享库存可能超限");
       }
     }
 
     const summaries = buSummaries.map((summary) => {
-      const buRows = previewRows.filter((row) => row.sc_bu === summary.scBu);
+      const buRows = previewRows.filter((row) => row.business_unit === summary.businessUnit);
       const allAmountsKnown = buRows.every((row) => row.previewFinalAmount !== null);
       const finalAmountTotal = allAmountsKnown
         ? formatDecimal(buRows.reduce((sum, row) => sum.plus(row.previewFinalAmount!), new Decimal(0)))
@@ -209,15 +209,15 @@ export function WeeklyFinalAdjustmentTable({
   }
 
   const columns: Column<PreviewRow>[] = [
-      { key: "sc_bu", header: "业务单元" },
+      { key: "business_unit", header: "业务单元" },
       {
-        key: "lp_code",
-        header: "LP",
+        key: "channel_code",
+        header: "渠道",
         className: "sticky left-0 z-10 bg-background",
         headerDetailClassName: "sticky left-0 z-10 bg-muted/20",
       },
-      { key: "pl5_code", header: "产品分类" },
-      { key: "upn", header: "SKU" },
+      { key: "category_code", header: "产品分类" },
+      { key: "sku", header: "SKU" },
       {
         key: "AD",
         header: "初始建议量 (AD)",
@@ -242,7 +242,7 @@ export function WeeklyFinalAdjustmentTable({
               step={1}
               value={drafts[row.id] ?? ""}
               inputMode="numeric"
-              aria-label={`${row.lp_code}-${row.upn} 人工RRA`}
+              aria-label={`${row.channel_code}-${row.sku} 人工RRA`}
               onChange={(event) => {
                 const value = event.target.value;
                 setDrafts((current) => ({ ...current, [row.id]: value }));
@@ -308,9 +308,9 @@ export function WeeklyFinalAdjustmentTable({
     ];
 
   const summaryTraces = preview.summaries.map((summary) => {
-    const traceRow = rows.find((row) => row.sc_bu === summary.scBu) ?? rows[0];
+    const traceRow = rows.find((row) => row.business_unit === summary.businessUnit) ?? rows[0];
     return {
-      scBu: summary.scBu,
+      businessUnit: summary.businessUnit,
       defaultTotal: cloneTrace(
         traceRow.traces.RRC,
         summary.systemDefaultFinalAmountTotal,
@@ -341,8 +341,8 @@ export function WeeklyFinalAdjustmentTable({
   return (
     <div className="space-y-4">
       {summaryTraces.map((summary) => (
-        <div key={summary.scBu} className="space-y-2 border-y py-4">
-          <div className="text-sm font-medium">{summary.scBu}</div>
+        <div key={summary.businessUnit} className="space-y-2 border-y py-4">
+          <div className="text-sm font-medium">{summary.businessUnit}</div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <FormulaMetric trace={summary.defaultTotal} label="系统默认最终金额" />
             <FormulaMetric trace={summary.defaultGap} label="系统默认差额" />
@@ -368,10 +368,10 @@ export function WeeklyFinalAdjustmentTable({
         columns={columns}
         data={preview.rows}
         dimensionFilters={{
-          keys: { bu: "sc_bu", lp: "lp_code", pl5: "pl5_code", upn: "upn" },
+          keys: { bu: "business_unit", channel: "channel_code", category: "category_code", sku: "sku" },
           initialValues: initialFilters,
         }}
-        exportTable="calc_weekly_upn_split_result"
+        exportTable="calc_weekly_sku_split_result"
         exportParams={{ calendar_date: calendarDate }}
       />
     </div>

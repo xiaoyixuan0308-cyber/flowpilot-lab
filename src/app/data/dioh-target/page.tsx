@@ -3,12 +3,12 @@ import { BaseTableActions } from "@/components/base-table-actions";
 import { DataPageLayout } from "@/components/data-page-layout";
 import { listLoadedDiohTargetRows } from "@/server/repositories";
 
-type Row = { id: string; dealerlpcode: string; dealerlpname: string | null; upn: string; abc_class: string | null; dioh_days: string; tolerance: string };
+type Row = { id: string; dealer_channel_code: string; dealer_channel_name: string | null; sku: string; abc_class: string | null; dioh_days: string; tolerance: string };
 
 const columns: Column<Row>[] = [
-  { key: "dealerlpcode", header: "LP编码" },
-  { key: "dealerlpname", header: "LP名称" },
-  { key: "upn", header: "SKU" },
+  { key: "dealer_channel_code", header: "渠道编码" },
+  { key: "dealer_channel_name", header: "渠道名称" },
+  { key: "sku", header: "SKU" },
   { key: "abc_class", header: "ABC分类" },
   { key: "tolerance", header: "可调剂" },
   { key: "dioh_days", header: "目标库存天数【K】" },
@@ -17,8 +17,8 @@ const columns: Column<Row>[] = [
 export default async function DiohTargetPage() {
   const rows = await listLoadedDiohTargetRows();
   const data: Row[] = rows.map((r) => ({
-    id: r.id, dealerlpcode: r.dealerlpcode, dealerlpname: r.dealerlpname,
-    upn: r.upn, abc_class: r.abc_class,
+    id: r.id, dealer_channel_code: r.dealer_channel_code, dealer_channel_name: r.dealer_channel_name,
+    sku: r.sku, abc_class: r.abc_class,
     tolerance: r.abc_class === "A" ? "是" : "否",
     dioh_days: r.dioh_days.toString(),
   }));
@@ -51,19 +51,19 @@ export default async function DiohTargetPage() {
         title: "库存天数规则表",
         columns,
         data,
-        searchKey: "upn",
+        searchKey: "sku",
         searchPlaceholder: "搜索SKU...",
         filters: [
           {
-            key: "dealerlpcode",
+            key: "dealer_channel_code",
             label: "经销商",
             placeholder: "全部经销商",
-            optionLabelKey: "dealerlpname",
+            optionLabelKey: "dealer_channel_name",
           },
           { key: "abc_class", label: "ABC", placeholder: "全部ABC", options: abcOptions },
           { key: "tolerance", label: "可调剂", placeholder: "全部", options: toleranceOptions },
         ],
-        exportTable: "ods_dioh_dealer_upn",
+        exportTable: "ods_dioh_dealer_sku",
         exportParams: {},
       }}
     />

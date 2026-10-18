@@ -161,21 +161,21 @@ function assertUniqueImportKey(
 export function mapInventoryRows(dataRows: ImportRow[]) {
   const seen = new Map<string, number>();
   return dataRows.map((row, index) => {
-    const dealerlpcode = requiredText(row, "dealerlpcode", index);
-    const upn = requiredText(row, "upn", index);
+    const dealer_channel_code = requiredText(row, "dealer_channel_code", index);
+    const sku = requiredText(row, "sku", index);
     const year = optionalText(row, "year", index) ?? getDefaultYear();
     const month = normalizeMonth(optionalText(row, "month", index), getDefaultMonth());
     assertUniqueImportKey(
       seen,
-      `${dealerlpcode}|${upn}|${year}|${month}`,
+      `${dealer_channel_code}|${sku}|${year}|${month}`,
       index,
-      "ods_inventory_dealer_upn",
-      `dealerlpcode=${dealerlpcode}, upn=${upn}, year=${year}, month=${month}`
+      "ods_inventory_dealer_sku",
+      `dealer_channel_code=${dealer_channel_code}, sku=${sku}, year=${year}, month=${month}`
     );
     return {
-      dealerlpcode,
-      dealerlpname: optionalText(row, "dealerlpname", index),
-      upn,
+      dealer_channel_code,
+      dealer_channel_name: optionalText(row, "dealer_channel_name", index),
+      sku,
       qty: numberOrDefault(row, "qty", index),
       year,
       month,
@@ -186,26 +186,26 @@ export function mapInventoryRows(dataRows: ImportRow[]) {
 export function mapT2PurchaseRows(dataRows: ImportRow[]) {
   const seen = new Map<string, number>();
   return dataRows.map((row, index) => {
-    const parentdealerlpcode = optionalText(row, "parentdealerlpcode", index);
-    const scBu = requiredText(row, "sc_bu", index);
-    const upn = requiredText(row, "upn", index);
-    const pl5Code = requiredText(row, "pl5_code", index);
+    const parent_dealer_channel_code = optionalText(row, "parent_dealer_channel_code", index);
+    const businessUnit = requiredText(row, "business_unit", index);
+    const sku = requiredText(row, "sku", index);
+    const categoryCode = requiredText(row, "category_code", index);
     const year = optionalText(row, "year", index) ?? "2026";
     const month = normalizeMonth(optionalText(row, "month", index), "1");
     assertUniqueImportKey(
       seen,
-      `${scBu}|${parentdealerlpcode ?? ""}|${pl5Code}|${upn}|${year}|${month}`,
+      `${businessUnit}|${parent_dealer_channel_code ?? ""}|${categoryCode}|${sku}|${year}|${month}`,
       index,
       "ods_t2_purchase_monthly",
-      `sc_bu=${scBu}, parentdealerlpcode=${parentdealerlpcode ?? ""}, pl5_code=${pl5Code}, upn=${upn}, year=${year}, month=${month}`
+      `business_unit=${businessUnit}, parent_dealer_channel_code=${parent_dealer_channel_code ?? ""}, category_code=${categoryCode}, sku=${sku}, year=${year}, month=${month}`
     );
     return {
-      parentdealerlpcode,
-      parentdealerlpname: optionalText(row, "parentdealerlpname", index),
-      sc_bu: scBu,
-      upn,
-      pl5_code: pl5Code,
-      pl5_name: optionalText(row, "pl5_name", index),
+      parent_dealer_channel_code,
+      parent_dealer_channel_name: optionalText(row, "parent_dealer_channel_name", index),
+      business_unit: businessUnit,
+      sku,
+      category_code: categoryCode,
+      category_name: optionalText(row, "category_name", index),
       qty: numberOrDefault(row, "qty", index),
       year,
       month,
@@ -216,46 +216,46 @@ export function mapT2PurchaseRows(dataRows: ImportRow[]) {
 export function mapDiohTargetRows(dataRows: ImportRow[]) {
   const seen = new Map<string, number>();
   return dataRows.map((row, index) => {
-    const dealerlpcode = requiredText(row, "dealerlpcode", index);
-    const upn = requiredText(row, "upn", index);
+    const dealer_channel_code = requiredText(row, "dealer_channel_code", index);
+    const sku = requiredText(row, "sku", index);
     assertUniqueImportKey(
       seen,
-      `${dealerlpcode}|${upn}`,
+      `${dealer_channel_code}|${sku}`,
       index,
-      "ods_dioh_dealer_upn",
-      `dealerlpcode=${dealerlpcode}, upn=${upn}`
+      "ods_dioh_dealer_sku",
+      `dealer_channel_code=${dealer_channel_code}, sku=${sku}`
     );
     return {
-      dealerlpcode,
-      dealerlpname: optionalText(row, "dealerlpname", index),
-      upn,
+      dealer_channel_code,
+      dealer_channel_name: optionalText(row, "dealer_channel_name", index),
+      sku,
       abc_class: optionalText(row, "abc_class", index),
       dioh_days: numberOrDefault(row, "dioh_days", index),
     };
   });
 }
 
-export function mapFcstLpPl5Rows(dataRows: ImportRow[]) {
+export function mapFcstChannelCategoryRows(dataRows: ImportRow[]) {
   const seen = new Map<string, number>();
   return dataRows.map((row, index) => {
-    const dealerlpcode = requiredText(row, "dealerlpcode", index);
-    const scBu = requiredText(row, "sc_bu", index);
-    const pl5Code = requiredText(row, "pl5_code", index);
+    const dealer_channel_code = requiredText(row, "dealer_channel_code", index);
+    const businessUnit = requiredText(row, "business_unit", index);
+    const categoryCode = requiredText(row, "category_code", index);
     const year = optionalText(row, "year", index) ?? "2026";
     const month = normalizeMonth(optionalText(row, "month", index), "1");
     assertUniqueImportKey(
       seen,
-      `${scBu}|${dealerlpcode}|${pl5Code}|${year}|${month}`,
+      `${businessUnit}|${dealer_channel_code}|${categoryCode}|${year}|${month}`,
       index,
-      "ods_fcst_lp_pl5_monthly",
-      `sc_bu=${scBu}, dealerlpcode=${dealerlpcode}, pl5_code=${pl5Code}, year=${year}, month=${month}`
+      "ods_fcst_channel_category_monthly",
+      `business_unit=${businessUnit}, dealer_channel_code=${dealer_channel_code}, category_code=${categoryCode}, year=${year}, month=${month}`
     );
     return {
-      dealerlpcode,
-      dealerlpname: optionalText(row, "dealerlpname", index),
-      sc_bu: scBu,
-      pl5_code: pl5Code,
-      pl5_name: optionalText(row, "pl5_name", index),
+      dealer_channel_code,
+      dealer_channel_name: optionalText(row, "dealer_channel_name", index),
+      business_unit: businessUnit,
+      category_code: categoryCode,
+      category_name: optionalText(row, "category_name", index),
       fcst_qty: numberOrDefault(row, "fcst_qty", index),
       year,
       month,
@@ -263,27 +263,27 @@ export function mapFcstLpPl5Rows(dataRows: ImportRow[]) {
   });
 }
 
-export function mapFcstT2Pl5Rows(dataRows: ImportRow[]) {
+export function mapFcstT2CategoryRows(dataRows: ImportRow[]) {
   const seen = new Map<string, number>();
   return dataRows.map((row, index) => {
-    const parentdealerlpcode = optionalText(row, "parentdealerlpcode", index);
-    const scBu = requiredText(row, "sc_bu", index);
-    const pl5Code = requiredText(row, "pl5_code", index);
+    const parent_dealer_channel_code = optionalText(row, "parent_dealer_channel_code", index);
+    const businessUnit = requiredText(row, "business_unit", index);
+    const categoryCode = requiredText(row, "category_code", index);
     const year = optionalText(row, "year", index) ?? "2026";
     const month = normalizeMonth(optionalText(row, "month", index), "1");
     assertUniqueImportKey(
       seen,
-      `${scBu}|${parentdealerlpcode ?? ""}|${pl5Code}|${year}|${month}`,
+      `${businessUnit}|${parent_dealer_channel_code ?? ""}|${categoryCode}|${year}|${month}`,
       index,
-      "ods_fcst_t2_pl5_monthly",
-      `sc_bu=${scBu}, parentdealerlpcode=${parentdealerlpcode ?? ""}, pl5_code=${pl5Code}, year=${year}, month=${month}`
+      "ods_fcst_t2_category_monthly",
+      `business_unit=${businessUnit}, parent_dealer_channel_code=${parent_dealer_channel_code ?? ""}, category_code=${categoryCode}, year=${year}, month=${month}`
     );
     return {
-      parentdealerlpcode,
-      parentdealerlpname: optionalText(row, "parentdealerlpname", index),
-      sc_bu: scBu,
-      pl5_code: pl5Code,
-      pl5_name: optionalText(row, "pl5_name", index),
+      parent_dealer_channel_code,
+      parent_dealer_channel_name: optionalText(row, "parent_dealer_channel_name", index),
+      business_unit: businessUnit,
+      category_code: categoryCode,
+      category_name: optionalText(row, "category_name", index),
       fcst_qty: numberOrDefault(row, "fcst_qty", index),
       year,
       month,
@@ -294,41 +294,41 @@ export function mapFcstT2Pl5Rows(dataRows: ImportRow[]) {
 export function mapAllocateRows(dataRows: ImportRow[]) {
   return dataRows.map((row, index) => ({
     period_month: dateOrDefault(row, "period_month", index, new Date()),
-    dealerlpcode: requiredText(row, "dealerlpcode", index),
-    dealerlpname: optionalText(row, "dealerlpname", index),
-    pl5_code: requiredText(row, "pl5_code", index),
-    pl5_name: optionalText(row, "pl5_name", index),
+    dealer_channel_code: requiredText(row, "dealer_channel_code", index),
+    dealer_channel_name: optionalText(row, "dealer_channel_name", index),
+    category_code: requiredText(row, "category_code", index),
+    category_name: optionalText(row, "category_name", index),
     allocate_qty: numberOrDefault(row, "allocate_qty", index),
   }));
 }
 
-export function mapActiveUpnRows(dataRows: ImportRow[]) {
+export function mapActiveSkuRows(dataRows: ImportRow[]) {
   return dataRows.map((row, index) => ({
-    dealerlpcode: optionalText(row, "dealerlpcode", index),
-    dealerlpname: optionalText(row, "dealerlpname", index),
-    pl5_code: requiredText(row, "pl5_code", index),
-    pl5_name: optionalText(row, "pl5_name", index),
-    upn: requiredText(row, "upn", index),
+    dealer_channel_code: optionalText(row, "dealer_channel_code", index),
+    dealer_channel_name: optionalText(row, "dealer_channel_name", index),
+    category_code: requiredText(row, "category_code", index),
+    category_name: optionalText(row, "category_name", index),
+    sku: requiredText(row, "sku", index),
     year: optionalText(row, "year", index) ?? "2026",
     month: normalizeMonth(optionalText(row, "month", index), "1"),
   }));
 }
 
-export function mapDealerUpnDnRows(dataRows: ImportRow[]) {
+export function mapDealerSkuDnRows(dataRows: ImportRow[]) {
   return dataRows.map((row, index) => ({
     created_on: requiredDate(row, "created_on", index),
     sold_to_pt: optionalText(row, "sold_to_pt", index),
-    sc_bu: requiredText(row, "sc_bu", index),
+    business_unit: requiredText(row, "business_unit", index),
     dealer_type: requiredText(row, "dealer_type", index).toUpperCase(),
     material: requiredText(row, "material", index),
     delivery_qty: requiredNumber(row, "delivery_qty", index),
   }));
 }
 
-export function mapDealerUpnOpenOrderRows(dataRows: ImportRow[]) {
+export function mapDealerSkuOpenOrderRows(dataRows: ImportRow[]) {
   return dataRows.map((row, index) => ({
     customer: requiredText(row, "customer", index),
-    sc_bu: requiredText(row, "sc_bu", index),
+    business_unit: requiredText(row, "business_unit", index),
     dealer_type: optionalText(row, "dealer_type", index)?.toUpperCase() ?? null,
     material: requiredText(row, "material", index),
     dctp: requiredText(row, "dctp", index),
@@ -336,7 +336,7 @@ export function mapDealerUpnOpenOrderRows(dataRows: ImportRow[]) {
   }));
 }
 
-export function mapBscUpnInventoryRows(dataRows: ImportRow[]) {
+export function mapCentralWarehouseSkuInventoryRows(dataRows: ImportRow[]) {
   return dataRows.map((row, index) => ({
     material: requiredText(row, "material", index),
     sloc: requiredText(row, "sloc", index),
@@ -344,7 +344,7 @@ export function mapBscUpnInventoryRows(dataRows: ImportRow[]) {
   }));
 }
 
-export function mapBscUpnIntransitRows(dataRows: ImportRow[]) {
+export function mapCentralWarehouseSkuIntransitRows(dataRows: ImportRow[]) {
   return dataRows.map((row, index) => ({
     material: requiredText(row, "material", index),
     forecast_date: requiredDate(row, "forecast_date", index),
@@ -352,51 +352,51 @@ export function mapBscUpnIntransitRows(dataRows: ImportRow[]) {
   }));
 }
 
-export function mapUpnSafetyStockRows(dataRows: ImportRow[]) {
+export function mapSkuSafetyStockRows(dataRows: ImportRow[]) {
   const seen = new Map<string, number>();
   return dataRows.map((row, index) => {
-    const upn = requiredText(row, "upn", index);
-    assertUniqueImportKey(seen, upn, index, "ods_upn_safety_stock_manual", `upn=${upn}`);
+    const sku = requiredText(row, "sku", index);
+    assertUniqueImportKey(seen, sku, index, "ods_sku_safety_stock_manual", `sku=${sku}`);
     return {
-      upn,
+      sku,
       safety_stock_qty: requiredNumber(row, "safety_stock_qty", index),
     };
   });
 }
 
-export function mapLpUpnPurchasePriceRows(dataRows: ImportRow[], usdToCnyRate: number) {
+export function mapChannelSkuPurchasePriceRows(dataRows: ImportRow[], usdToCnyRate: number) {
   const seen = new Map<string, number>();
   return dataRows.map((row, index) => {
     const dealerCode = requiredText(row, "dealer_code", index);
     const dealerType = requiredText(row, "dealer_type", index).toUpperCase();
-    const upn = requiredText(row, "upn", index);
-    const bscStdSellPrice = requiredNumber(row, "bsc_std_sell_price", index);
-    const bscStdSellPriceVat = optionalNumber(row, "bsc_std_sell_price_vat", index);
+    const sku = requiredText(row, "sku", index);
+    const centralWarehouseStdSellPrice = requiredNumber(row, "central_warehouse_std_sell_price", index);
+    const centralWarehouseStdSellPriceVat = optionalNumber(row, "central_warehouse_std_sell_price_vat", index);
     const sourceCurrency = normalizeCurrency(requiredText(row, "currency_code", index));
 
-    if (bscStdSellPrice <= 0) {
-      throw new Error(`${describeCell("bsc_std_sell_price", index)} must be greater than 0`);
+    if (centralWarehouseStdSellPrice <= 0) {
+      throw new Error(`${describeCell("central_warehouse_std_sell_price", index)} must be greater than 0`);
     }
 
     assertUniqueImportKey(
       seen,
-      `${dealerCode}|${dealerType}|${upn}`,
+      `${dealerCode}|${dealerType}|${sku}`,
       index,
-      "ods_lp_upn_purchase_price",
-      `dealer_code=${dealerCode}, dealer_type=${dealerType}, upn=${upn}`
+      "ods_channel_sku_purchase_price",
+      `dealer_code=${dealerCode}, dealer_type=${dealerType}, sku=${sku}`
     );
 
     return {
       dealer_code: dealerCode,
       dealer_type: dealerType,
-      upn,
-      bsc_std_sell_price: convertSourceAmountToUsd(bscStdSellPrice, sourceCurrency, usdToCnyRate),
-      bsc_std_sell_price_vat:
-        bscStdSellPriceVat === null
+      sku,
+      central_warehouse_std_sell_price: convertSourceAmountToUsd(centralWarehouseStdSellPrice, sourceCurrency, usdToCnyRate),
+      central_warehouse_std_sell_price_vat:
+        centralWarehouseStdSellPriceVat === null
           ? null
-          : convertSourceAmountToUsd(bscStdSellPriceVat, sourceCurrency, usdToCnyRate),
-      source_sell_price: bscStdSellPrice,
-      source_sell_price_vat: bscStdSellPriceVat,
+          : convertSourceAmountToUsd(centralWarehouseStdSellPriceVat, sourceCurrency, usdToCnyRate),
+      source_sell_price: centralWarehouseStdSellPrice,
+      source_sell_price_vat: centralWarehouseStdSellPriceVat,
       source_currency: sourceCurrency,
       usd_to_cny_rate: usdToCnyRate,
     };
@@ -406,7 +406,7 @@ export function mapLpUpnPurchasePriceRows(dataRows: ImportRow[], usdToCnyRate: n
 export function mapCalendarPatternWeeklyRows(dataRows: ImportRow[]) {
   const seen = new Map<string, number>();
   return dataRows.map((row, index) => {
-    const scBu = requiredText(row, "sc_bu", index);
+    const businessUnit = requiredText(row, "business_unit", index);
     const periodMonth = requiredDate(row, "period_month", index);
     const monthStartDate = requiredDate(row, "month_start_date", index);
     const weekStartDate = requiredDate(row, "week_start_date", index);
@@ -422,13 +422,13 @@ export function mapCalendarPatternWeeklyRows(dataRows: ImportRow[]) {
     }
     assertUniqueImportKey(
       seen,
-      `${toDateKey(weekStartDate)}|${scBu}`,
+      `${toDateKey(weekStartDate)}|${businessUnit}`,
       index,
       "ods_calendar_pattern_weekly",
-      `week_start_date=${toDateKey(weekStartDate)}, sc_bu=${scBu}`
+      `week_start_date=${toDateKey(weekStartDate)}, business_unit=${businessUnit}`
     );
     return {
-      sc_bu: scBu,
+      business_unit: businessUnit,
       period_month: periodMonth,
       month_start_date: monthStartDate,
       week_start_date: weekStartDate,
@@ -446,17 +446,17 @@ export function mapWeeklyAmountThresholdRows(dataRows: ImportRow[]) {
   const seen = new Map<string, number>();
 
   return dataRows.map((row, index) => {
-    const scBu = requiredText(row, "sc_bu", index);
+    const businessUnit = requiredText(row, "business_unit", index);
     assertUniqueImportKey(
       seen,
-      scBu,
+      businessUnit,
       index,
       "ods_weekly_amount_threshold_manual",
-      `sc_bu=${scBu}`
+      `business_unit=${businessUnit}`
     );
 
     return {
-      sc_bu: scBu,
+      business_unit: businessUnit,
       overage_threshold_pct: requiredPercentage(row, "overage_threshold_pct", index),
       shortfall_threshold_pct: requiredPercentage(row, "shortfall_threshold_pct", index),
       source_system: "MANUAL",
@@ -464,39 +464,39 @@ export function mapWeeklyAmountThresholdRows(dataRows: ImportRow[]) {
   });
 }
 
-export function mapUpnConstraintRows(dataRows: ImportRow[]) {
+export function mapSkuConstraintRows(dataRows: ImportRow[]) {
   const seen = new Map<string, number>();
 
   return dataRows.map((row, index) => {
     const periodMonth = requiredMonthStartDate(row, "period_month", index);
-    const scBu = requiredText(row, "sc_bu", index);
-    const upn = requiredText(row, "upn", index);
+    const businessUnit = requiredText(row, "business_unit", index);
+    const sku = requiredText(row, "sku", index);
     const constraintType = normalizeConstraintType(row, index);
-    const uniqueKey = `${toDateKey(periodMonth)}|${scBu}|${upn}|${constraintType}`;
+    const uniqueKey = `${toDateKey(periodMonth)}|${businessUnit}|${sku}|${constraintType}`;
 
     assertUniqueImportKey(
       seen,
       uniqueKey,
       index,
-      "ods_upn_constraint_manual",
-      `period_month=${toDateKey(periodMonth)}, sc_bu=${scBu}, upn=${upn}, constraint_type=${constraintType}`
+      "ods_sku_constraint_manual",
+      `period_month=${toDateKey(periodMonth)}, business_unit=${businessUnit}, sku=${sku}, constraint_type=${constraintType}`
     );
 
     return {
       period_month: periodMonth,
-      sc_bu: scBu,
-      upn,
+      business_unit: businessUnit,
+      sku,
       constraint_type: constraintType,
       source_system: optionalText(row, "source_system", index) ?? "MANUAL",
     };
   });
 }
 
-export function mapUpnBundleRows(dataRows: ImportRow[]) {
+export function mapSkuBundleRows(dataRows: ImportRow[]) {
   const seen = new Map<string, number>();
 
   return dataRows.map((row, index) => {
-    const upn = requiredText(row, "upn", index);
+    const sku = requiredText(row, "sku", index);
     const bundleQty = requiredNumber(row, "bundle_qty", index);
     if (bundleQty <= 0) {
       throw new Error(`${describeCell("bundle_qty", index)} must be greater than 0`);
@@ -504,9 +504,9 @@ export function mapUpnBundleRows(dataRows: ImportRow[]) {
     if (!Number.isInteger(bundleQty)) {
       throw new Error(`${describeCell("bundle_qty", index)} must be an integer`);
     }
-    assertUniqueImportKey(seen, upn, index, "ods_upn_bundle_manual", `upn=${upn}`);
+    assertUniqueImportKey(seen, sku, index, "ods_sku_bundle_manual", `sku=${sku}`);
     return {
-      upn,
+      sku,
       bundle_qty: bundleQty,
       source_system: optionalText(row, "source_system", index) ?? "MANUAL",
     };
@@ -519,17 +519,17 @@ export function mapBuPatternAmountWeeklyRows(dataRows: ImportRow[], usdToCnyRate
   return dataRows.map((row, index) => {
     const periodWeek = requiredDate(row, "period_week", index);
     const periodMonth = requiredDate(row, "period_month", index);
-    const scBu = requiredText(row, "sc_bu", index);
+    const businessUnit = requiredText(row, "business_unit", index);
     const sourceCurrency = normalizeCurrency(requiredText(row, "currency_code", index));
     const sourceActualAmount = optionalNumber(row, "actual_amount", index);
     const sourceMonthTargetAmount = requiredNumber(row, "month_target_amount", index);
     const sourceMonthLimitAmount = requiredNumber(row, "month_limit_amount", index);
-    const uniqueKey = `${toDateKey(periodWeek)}|${scBu}`;
+    const uniqueKey = `${toDateKey(periodWeek)}|${businessUnit}`;
     const firstIndex = seen.get(uniqueKey);
 
     if (firstIndex !== undefined) {
       throw new Error(
-        `ods_bu_pattern_amount_weekly duplicate key detected: period_week=${toDateKey(periodWeek)}, sc_bu=${scBu}; Excel rows ${firstIndex + 2} and ${index + 2}`
+        `ods_bu_pattern_amount_weekly duplicate key detected: period_week=${toDateKey(periodWeek)}, business_unit=${businessUnit}; Excel rows ${firstIndex + 2} and ${index + 2}`
       );
     }
 
@@ -558,7 +558,7 @@ export function mapBuPatternAmountWeeklyRows(dataRows: ImportRow[], usdToCnyRate
     return {
       period_week: periodWeek,
       period_month: periodMonth,
-      sc_bu: scBu,
+      business_unit: businessUnit,
       actual_amount: sourceActualAmount === null
         ? null
         : convertSourceAmountToUsd(sourceActualAmount, sourceCurrency, usdToCnyRate),

@@ -3,19 +3,19 @@ import { type ImportSheetTable } from "@/server/constants/import-sheet-map";
 import {
   mapBuPatternAmountWeeklyRows,
   mapCalendarPatternWeeklyRows,
-  mapBscUpnIntransitRows,
-  mapBscUpnInventoryRows,
-  mapDealerUpnDnRows,
-  mapDealerUpnOpenOrderRows,
+  mapCentralWarehouseSkuIntransitRows,
+  mapCentralWarehouseSkuInventoryRows,
+  mapDealerSkuDnRows,
+  mapDealerSkuOpenOrderRows,
   mapDiohTargetRows,
-  mapFcstLpPl5Rows,
-  mapFcstT2Pl5Rows,
+  mapFcstChannelCategoryRows,
+  mapFcstT2CategoryRows,
   mapInventoryRows,
-  mapLpUpnPurchasePriceRows,
+  mapChannelSkuPurchasePriceRows,
   mapT2PurchaseRows,
-  mapUpnConstraintRows,
-  mapUpnBundleRows,
-  mapUpnSafetyStockRows,
+  mapSkuConstraintRows,
+  mapSkuBundleRows,
+  mapSkuSafetyStockRows,
   mapWeeklyAmountThresholdRows,
 } from "./import-row-mappers";
 import { getCurrentUsdToCnyRate } from "@/server/services/currency/exchange-rate.service";
@@ -29,8 +29,8 @@ export async function writeImportRows(
   switch (table) {
     case "inventory": {
       const data = mapInventoryRows(dataRows);
-      await tx.ods_inventory_dealer_upn.deleteMany();
-      await tx.ods_inventory_dealer_upn.createMany({ data });
+      await tx.ods_inventory_dealer_sku.deleteMany();
+      await tx.ods_inventory_dealer_sku.createMany({ data });
       return;
     }
     case "t2Purchase": {
@@ -41,69 +41,69 @@ export async function writeImportRows(
     }
     case "diohTarget": {
       const data = mapDiohTargetRows(dataRows);
-      await tx.ods_dioh_dealer_upn.deleteMany();
-      await tx.ods_dioh_dealer_upn.createMany({ data });
+      await tx.ods_dioh_dealer_sku.deleteMany();
+      await tx.ods_dioh_dealer_sku.createMany({ data });
       return;
     }
-    case "fcstLpPl5": {
-      const data = mapFcstLpPl5Rows(dataRows);
-      await tx.ods_fcst_lp_pl5_monthly.deleteMany();
-      await tx.ods_fcst_lp_pl5_monthly.createMany({ data });
+    case "fcstChannelCategory": {
+      const data = mapFcstChannelCategoryRows(dataRows);
+      await tx.ods_fcst_channel_category_monthly.deleteMany();
+      await tx.ods_fcst_channel_category_monthly.createMany({ data });
       return;
     }
-    case "fcstT2Pl5": {
-      const data = mapFcstT2Pl5Rows(dataRows);
-      await tx.ods_fcst_t2_pl5_monthly.deleteMany();
-      await tx.ods_fcst_t2_pl5_monthly.createMany({ data });
+    case "fcstT2Category": {
+      const data = mapFcstT2CategoryRows(dataRows);
+      await tx.ods_fcst_t2_category_monthly.deleteMany();
+      await tx.ods_fcst_t2_category_monthly.createMany({ data });
       return;
     }
-    case "dealerUpnDn": {
-      const data = mapDealerUpnDnRows(dataRows);
-      await tx.ods_dealer_upn_dn.deleteMany();
-      if (data.length > 0) await tx.ods_dealer_upn_dn.createMany({ data });
+    case "dealerSkuDn": {
+      const data = mapDealerSkuDnRows(dataRows);
+      await tx.ods_dealer_sku_dn.deleteMany();
+      if (data.length > 0) await tx.ods_dealer_sku_dn.createMany({ data });
       return;
     }
-    case "dealerUpnOpenOrder": {
-      const data = mapDealerUpnOpenOrderRows(dataRows);
-      await tx.ods_dealer_upn_open_order.deleteMany();
-      if (data.length > 0) await tx.ods_dealer_upn_open_order.createMany({ data });
+    case "dealerSkuOpenOrder": {
+      const data = mapDealerSkuOpenOrderRows(dataRows);
+      await tx.ods_dealer_sku_open_order.deleteMany();
+      if (data.length > 0) await tx.ods_dealer_sku_open_order.createMany({ data });
       return;
     }
-    case "bscUpnInventory": {
-      const data = mapBscUpnInventoryRows(dataRows);
-      await tx.ods_bsc_upn_inventory.deleteMany();
-      await tx.ods_bsc_upn_inventory.createMany({ data });
+    case "centralWarehouseSkuInventory": {
+      const data = mapCentralWarehouseSkuInventoryRows(dataRows);
+      await tx.ods_central_warehouse_sku_inventory.deleteMany();
+      await tx.ods_central_warehouse_sku_inventory.createMany({ data });
       return;
     }
-    case "bscUpnIntransit": {
-      const data = mapBscUpnIntransitRows(dataRows);
-      await tx.ods_bsc_upn_intransit.deleteMany();
-      if (data.length > 0) await tx.ods_bsc_upn_intransit.createMany({ data });
+    case "centralWarehouseSkuIntransit": {
+      const data = mapCentralWarehouseSkuIntransitRows(dataRows);
+      await tx.ods_central_warehouse_sku_intransit.deleteMany();
+      if (data.length > 0) await tx.ods_central_warehouse_sku_intransit.createMany({ data });
       return;
     }
-    case "upnSafetyStock": {
-      const data = mapUpnSafetyStockRows(dataRows);
-      await tx.ods_upn_safety_stock_manual.deleteMany();
-      if (data.length > 0) await tx.ods_upn_safety_stock_manual.createMany({ data });
+    case "skuSafetyStock": {
+      const data = mapSkuSafetyStockRows(dataRows);
+      await tx.ods_sku_safety_stock_manual.deleteMany();
+      if (data.length > 0) await tx.ods_sku_safety_stock_manual.createMany({ data });
       return;
     }
-    case "lpUpnPurchasePrice": {
+    case "channelSkuPurchasePrice": {
       const rate = workbookUsdToCnyRate ?? (await getCurrentUsdToCnyRate(tx)).rate;
-      const data = mapLpUpnPurchasePriceRows(dataRows, rate);
-      await tx.ods_lp_upn_purchase_price.deleteMany();
-      await tx.ods_lp_upn_purchase_price.createMany({ data });
+      const data = mapChannelSkuPurchasePriceRows(dataRows, rate);
+      await tx.ods_channel_sku_purchase_price.deleteMany();
+      await tx.ods_channel_sku_purchase_price.createMany({ data });
       return;
     }
-    case "upnConstraint": {
-      const data = mapUpnConstraintRows(dataRows);
-      await tx.ods_upn_constraint_manual.deleteMany();
-      if (data.length > 0) await tx.ods_upn_constraint_manual.createMany({ data });
+    case "skuConstraint": {
+      const data = mapSkuConstraintRows(dataRows);
+      await tx.ods_sku_constraint_manual.deleteMany();
+      if (data.length > 0) await tx.ods_sku_constraint_manual.createMany({ data });
       return;
     }
-    case "upnBundle": {
-      const data = mapUpnBundleRows(dataRows);
-      await tx.ods_upn_bundle_manual.deleteMany();
-      if (data.length > 0) await tx.ods_upn_bundle_manual.createMany({ data });
+    case "skuBundle": {
+      const data = mapSkuBundleRows(dataRows);
+      await tx.ods_sku_bundle_manual.deleteMany();
+      if (data.length > 0) await tx.ods_sku_bundle_manual.createMany({ data });
       return;
     }
     case "weeklyAmountThreshold": {

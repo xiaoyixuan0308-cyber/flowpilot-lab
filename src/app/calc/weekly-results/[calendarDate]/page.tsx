@@ -13,21 +13,21 @@ import { multiply10 } from "@/server/services/calc/calculation-decimal";
 
 interface WeeklyBatchDetailPageProps {
   params: Promise<{ calendarDate: string }>;
-  searchParams: Promise<{ currency?: string; bu?: string; lp?: string; pl5?: string; upn?: string }>;
+  searchParams: Promise<{ currency?: string; bu?: string; channel?: string; category?: string; sku?: string }>;
 }
 
 type WeeklyResultRow = {
-  sc_bu: string;
-  lp_code: string;
-  lp_name: string;
-  pl5_code: string;
-  pl5_name: string;
-  upn: string;
+  business_unit: string;
+  channel_code: string;
+  channel_name: string;
+  category_code: string;
+  category_name: string;
+  sku: string;
   month_quota_qty: string;
   current_week_pattern_pct: string;
   aa_month_delivered_suggestion_pct: string;
   ab_current_inventory_days: string;
-  bb_upn_abc_class: string;
+  bb_sku_abc_class: string;
   be_original_target_inventory_qty: string;
   bf_current_inventory_qty: string;
   bj_t2_purchase_3m_avg_qty: string;
@@ -47,22 +47,22 @@ type WeeklyResultRow = {
   v_other_dealer_open_order_non_or_qty: string;
   w_open_order_non_or_total_qty: string;
   x_open_order_total_qty: string;
-  bsc_inventory_qty: string;
+  central_warehouse_inventory_qty: string;
   intransit_qty: string;
   safety_stock_qty: string;
-  bsc_available_qty: string;
+  central_warehouse_available_qty: string;
   week_quota_pattern_qty: string;
   week_target_pending_qty: string;
   week_target_pending_total_qty: string;
   inventory_status: string;
   suggest_qty: string;
-  remaining_bsc_available_qty: string;
+  remaining_central_warehouse_available_qty: string;
   target_inventory_adjustable_qty: string;
   post_suggest_dioh: string;
   unit_price: string;
   suggest_amount: string;
   system_adjusted_suggest_qty: string;
-  upn_month_cap_qty: string;
+  sku_month_cap_qty: string;
   constraint_types: string;
   adjustment_allowed_flag: string;
   monthly_remaining_adjustable_qty: string;
@@ -85,18 +85,18 @@ type WeeklyResultRow = {
 };
 
 const baseColumns: Column<WeeklyResultRow>[] = [
-  { key: "sc_bu", header: "业务单元" },
-  // { key: "lp_code", header: "LP Code" },
-  { key: "lp_name", header: "LP名称" },
-  // { key: "pl5_code", header: "产品分类 Code" },
-  { key: "pl5_name", header: "产品分类名称" },
-  { key: "upn", header: "SKU" },
+  { key: "business_unit", header: "业务单元" },
+  // { key: "channel_code", header: "Channel Code" },
+  { key: "channel_name", header: "渠道名称" },
+  // { key: "category_code", header: "产品分类 Code" },
+  { key: "category_name", header: "产品分类名称" },
+  { key: "sku", header: "SKU" },
   { key: "month_quota_qty", header: "月建议量(H_row)" },
   { key: "cc_prev_week_pattern_pct", header: "上周配比(CC)" },
   { key: "current_week_pattern_pct", header: "累计配比(CD)" },
   { key: "aa_month_delivered_suggestion_pct", header: "已发占比(AA)" },
   { key: "ab_current_inventory_days", header: "当前库存天数(AB)" },
-  { key: "bb_upn_abc_class", header: "ABC类型(BB)" },
+  { key: "bb_sku_abc_class", header: "ABC类型(BB)" },
   { key: "be_original_target_inventory_qty", header: "目标期末库存(BE)" },
   { key: "bf_current_inventory_qty", header: "当前库存(BF)" },
   { key: "bj_t2_purchase_3m_avg_qty", header: "T2采购3月均量(BJ)" },
@@ -104,27 +104,27 @@ const baseColumns: Column<WeeklyResultRow>[] = [
   { key: "actual_amount", header: "累计实际金额(CA)" },
   { key: "week_pattern_amount", header: "累计目标金额(CB)" },
   { key: "target_pending_amount", header: "累计待发金额(CR)" },
-  { key: "month_delivered_qty", header: "LP本月已发量(L)" },
+  { key: "month_delivered_qty", header: "渠道本月已发量(L)" },
   { key: "n_other_dealer_month_delivered_qty", header: "其他Dealer已发量(N)" },
   { key: "o_month_delivered_total_qty", header: "SKU已发总量(O)" },
-  { key: "open_order_or_qty", header: "LP OR订单(P)" },
-  { key: "other_dealer_open_order_or_qty", header: "非LP OR订单(R)" },
+  { key: "open_order_or_qty", header: "渠道 OR订单(P)" },
+  { key: "other_dealer_open_order_or_qty", header: "非渠道 OR订单(R)" },
   { key: "s_open_order_or_total_qty", header: "OR订单总量(S)" },
-  { key: "t_open_order_non_or_qty", header: "LP非OR订单(T)" },
-  { key: "v_other_dealer_open_order_non_or_qty", header: "非LP非OR订单(V)" },
+  { key: "t_open_order_non_or_qty", header: "渠道非OR订单(T)" },
+  { key: "v_other_dealer_open_order_non_or_qty", header: "非渠道非OR订单(V)" },
   { key: "w_open_order_non_or_total_qty", header: "非OR订单总量(W)" },
   { key: "x_open_order_total_qty", header: "订单总量(X)" },
   { key: "g_week_quota_pattern_total_qty", header: "累计目标总量(G)" },
-  { key: "bsc_inventory_qty", header: "BSC库存(YA)" },
+  { key: "central_warehouse_inventory_qty", header: "中央仓库存(YA)" },
   { key: "intransit_qty", header: "在途量(YB)" },
   { key: "safety_stock_qty", header: "安全库存(YC)" },
-  { key: "bsc_available_qty", header: "可用库存(Y)" },
+  { key: "central_warehouse_available_qty", header: "可用库存(Y)" },
   { key: "week_quota_pattern_qty", header: "累计目标量(J)" },
-  { key: "week_target_pending_qty", header: "LP待发量(JA)" },
+  { key: "week_target_pending_qty", header: "渠道待发量(JA)" },
   { key: "week_target_pending_total_qty", header: "SKU待发总量(JB)" },
   { key: "inventory_status", header: "库存状态(Z)" },
   { key: "suggest_qty", header: "建议补货量(AD)" },
-  { key: "remaining_bsc_available_qty", header: "剩余BSC库存(BH)" },
+  { key: "remaining_central_warehouse_available_qty", header: "剩余中央仓库存(BH)" },
   { key: "target_inventory_adjustable_qty", header: "库存可调上限(BI)" },
   { key: "post_suggest_dioh", header: "补货后库存天数(BK)" },
   { key: "unit_price", header: "采购单价(AM)" },
@@ -135,7 +135,7 @@ const baseColumns: Column<WeeklyResultRow>[] = [
   { key: "overage_threshold_pct", header: "超额缩减阈值" },
   { key: "shortfall_threshold_pct", header: "缺口补差阈值" },
   { key: "system_adjusted_suggest_qty", header: "调整后数量(SA)" },
-  { key: "upn_month_cap_qty", header: "SKU月上限(H_upn)" },
+  { key: "sku_month_cap_qty", header: "SKU月上限(H_sku)" },
   { key: "constraint_types", header: "约束类型(BA)" },
   { key: "adjustment_allowed_flag", header: "允许调整(BD)" },
   { key: "monthly_remaining_adjustable_qty", header: "月剩余可调量(BL)" },
@@ -190,7 +190,7 @@ function formatPercentage(value: unknown) {
 }
 
 type WeeklyBuSummaryDisplayRow = {
-  scBu: string;
+  businessUnit: string;
   currentWeekPatternPct: string;
   monthTargetAmount: string;
   actualAmount: string;
@@ -244,9 +244,9 @@ function WeeklyBuSummaryTable({
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.scBu} className="group border-t hover:bg-muted/30">
+              <tr key={row.businessUnit} className="group border-t hover:bg-muted/30">
                 <td className="sticky left-0 z-10 bg-background px-3 py-2 font-medium group-hover:bg-muted/30">
-                  {row.scBu}
+                  {row.businessUnit}
                 </td>
                 {columns.map((column) => (
                   <td key={column.key} className="px-3 py-2 text-right tabular-nums">
@@ -286,9 +286,9 @@ export default async function WeeklyBatchDetailPage({ params, searchParams }: We
   };
   const columns = buildColumns(displayCurrency);
   const periodMonthKey = batch.period_month.toISOString().slice(0, 10);
-  const { lpNameByCode, pl5NameByCode } = await getCalcResultNameLookup(periodMonthKey);
+  const { channelNameByCode, categoryNameByCode } = await getCalcResultNameLookup(periodMonthKey);
   const buSummaryRows: WeeklyBuSummaryDisplayRow[] = batch.bu_summaries.map((summary) => ({
-    scBu: summary.sc_bu,
+    businessUnit: summary.business_unit,
     currentWeekPatternPct: formatPercentage(summary.current_week_pattern_pct),
     monthTargetAmount: formatAmount(summary.month_target_amount),
     actualAmount: formatAmount(summary.actual_amount),
@@ -303,22 +303,22 @@ export default async function WeeklyBatchDetailPage({ params, searchParams }: We
     finalPatternGapAmount: formatAmount(summary.final_pattern_gap_amount),
   }));
 
-  const summaryByBu = new Map(batch.bu_summaries.map((summary) => [summary.sc_bu, summary]));
+  const summaryByBu = new Map(batch.bu_summaries.map((summary) => [summary.business_unit, summary]));
   const data: WeeklyResultRow[] = batch.results.map((row) => {
-    const summary = summaryByBu.get(row.sc_bu)!;
+    const summary = summaryByBu.get(row.business_unit)!;
     return ({
-    sc_bu: row.sc_bu,
-    lp_code: row.lp_code,
-    lp_name: lpNameByCode[row.lp_code] ?? row.lp_code,
-    pl5_code: row.pl5_code,
-    pl5_name: pl5NameByCode[row.pl5_code] ?? row.pl5_code,
-    upn: row.upn,
+    business_unit: row.business_unit,
+    channel_code: row.channel_code,
+    channel_name: channelNameByCode[row.channel_code] ?? row.channel_code,
+    category_code: row.category_code,
+    category_name: categoryNameByCode[row.category_code] ?? row.category_code,
+    sku: row.sku,
     month_quota_qty: formatMetric(row.month_quota_qty),
     current_week_pattern_pct: formatPercentage(row.current_week_pattern_pct),
     cc_prev_week_pattern_pct: formatPercentage(row.cc_prev_week_pattern_pct),
     aa_month_delivered_suggestion_pct: formatPercentage(row.aa_month_delivered_suggestion_pct),
     ab_current_inventory_days: formatMetric(row.ab_current_inventory_days),
-    bb_upn_abc_class: row.bb_upn_abc_class ?? "",
+    bb_sku_abc_class: row.bb_sku_abc_class ?? "",
     be_original_target_inventory_qty: formatMetric(row.be_original_target_inventory_qty),
     bf_current_inventory_qty: formatMetric(row.bf_current_inventory_qty),
     bj_t2_purchase_3m_avg_qty: formatMetric(row.bj_t2_purchase_3m_avg_qty),
@@ -337,16 +337,16 @@ export default async function WeeklyBatchDetailPage({ params, searchParams }: We
     v_other_dealer_open_order_non_or_qty: formatMetric(row.v_other_dealer_open_order_non_or_qty),
     w_open_order_non_or_total_qty: formatMetric(row.w_open_order_non_or_total_qty),
     x_open_order_total_qty: formatMetric(row.x_open_order_total_qty),
-    bsc_inventory_qty: formatMetric(row.bsc_inventory_qty),
+    central_warehouse_inventory_qty: formatMetric(row.central_warehouse_inventory_qty),
     intransit_qty: formatMetric(row.intransit_qty),
     safety_stock_qty: formatMetric(row.safety_stock_qty),
-    bsc_available_qty: formatMetric(row.bsc_available_qty),
+    central_warehouse_available_qty: formatMetric(row.central_warehouse_available_qty),
     week_quota_pattern_qty: formatMetric(row.week_quota_pattern_qty),
     week_target_pending_qty: formatMetric(row.week_target_pending_qty),
     week_target_pending_total_qty: formatMetric(row.week_target_pending_total_qty),
     inventory_status: row.inventory_status ?? "",
     suggest_qty: formatMetric(row.suggest_qty),
-    remaining_bsc_available_qty: formatMetric(row.remaining_bsc_available_qty),
+    remaining_central_warehouse_available_qty: formatMetric(row.remaining_central_warehouse_available_qty),
     target_inventory_adjustable_qty: formatMetric(row.target_inventory_adjustable_qty),
     post_suggest_dioh: formatMetric(row.post_suggest_dioh),
     unit_price: formatAmount(row.unit_price),
@@ -357,7 +357,7 @@ export default async function WeeklyBatchDetailPage({ params, searchParams }: We
     overage_threshold_pct: formatPercentage(summary.overage_threshold_pct),
     shortfall_threshold_pct: formatPercentage(summary.shortfall_threshold_pct),
     system_adjusted_suggest_qty: formatMetric(row.system_adjusted_suggest_qty),
-    upn_month_cap_qty: formatMetric(row.upn_month_cap_qty),
+    sku_month_cap_qty: formatMetric(row.sku_month_cap_qty),
     constraint_types: row.constraint_types ?? "无约束",
     adjustment_allowed_flag: row.adjustment_allowed_flag ?? "N",
     monthly_remaining_adjustable_qty: formatMetric(row.monthly_remaining_adjustable_qty),
@@ -377,16 +377,16 @@ export default async function WeeklyBatchDetailPage({ params, searchParams }: We
   const buildQuery = (currency: "USD" | "CNY") => {
     const params = new URLSearchParams({ currency });
     if (query.bu) params.set("bu", query.bu);
-    if (query.lp) params.set("lp", query.lp);
-    if (query.pl5) params.set("pl5", query.pl5);
-    if (query.upn) params.set("upn", query.upn);
+    if (query.channel) params.set("channel", query.channel);
+    if (query.category) params.set("category", query.category);
+    if (query.sku) params.set("sku", query.sku);
     return params.toString();
   };
   const linkedQuery = new URLSearchParams();
   if (query.bu) linkedQuery.set("bu", query.bu);
-  if (query.lp) linkedQuery.set("lp", query.lp);
-  if (query.pl5) linkedQuery.set("pl5", query.pl5);
-  if (query.upn) linkedQuery.set("upn", query.upn);
+  if (query.channel) linkedQuery.set("channel", query.channel);
+  if (query.category) linkedQuery.set("category", query.category);
+  if (query.sku) linkedQuery.set("sku", query.sku);
   const linkedQueryString = linkedQuery.toString();
 
   return (
@@ -421,7 +421,7 @@ export default async function WeeklyBatchDetailPage({ params, searchParams }: We
         <SummaryStatsGrid
           items={[
             { label: "结果行数", value: batch.total_rows },
-            { label: "SKU数", value: batch.total_upns },
+            { label: "SKU数", value: batch.total_skus },
           ]}
           columns={2}
         />
@@ -449,10 +449,10 @@ export default async function WeeklyBatchDetailPage({ params, searchParams }: We
         columns={columns}
         data={data}
         dimensionFilters={{
-          keys: { bu: "sc_bu", lp: "lp_code", pl5: "pl5_code", upn: "upn" },
-          initialValues: { bu: query.bu, lp: query.lp, pl5: query.pl5, upn: query.upn },
+          keys: { bu: "business_unit", channel: "channel_code", category: "category_code", sku: "sku" },
+          initialValues: { bu: query.bu, channel: query.channel, category: query.category, sku: query.sku },
         }}
-        exportTable="calc_weekly_upn_split_result"
+        exportTable="calc_weekly_sku_split_result"
         exportParams={{ calendar_date: calendarDate }}
       />
     </div>

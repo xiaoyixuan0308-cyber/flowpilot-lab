@@ -14,10 +14,10 @@ export async function GET(request: NextRequest) {
   const calendarDate = request.nextUrl.searchParams.get("calendar_date");
   const searchKey = request.nextUrl.searchParams.get("search_key");
   const searchValue = request.nextUrl.searchParams.get("search_value");
-  const scBu = request.nextUrl.searchParams.get("sc_bu");
-  const lpCode = request.nextUrl.searchParams.get("lp_code");
-  const pl5Code = request.nextUrl.searchParams.get("pl5_code");
-  const upn = request.nextUrl.searchParams.get("upn");
+  const businessUnit = request.nextUrl.searchParams.get("business_unit");
+  const channelCode = request.nextUrl.searchParams.get("channel_code");
+  const categoryCode = request.nextUrl.searchParams.get("category_code");
+  const sku = request.nextUrl.searchParams.get("sku");
   const isError = request.nextUrl.searchParams.get("is_error");
   const errorMessage = request.nextUrl.searchParams.get("error_message");
   const periodMonth = request.nextUrl.searchParams.get("period_month");
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
   const exportTable = table as ExportTableName;
 
   if (
-    (exportTable === "calc_upn_split_result" || exportTable === "calc_upn_split_trace") &&
+    (exportTable === "calc_sku_split_result" || exportTable === "calc_sku_split_trace") &&
     !batchId &&
     !periodMonth
   ) {
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (exportTable === "calc_weekly_upn_split_result" && !batchId && !calendarDate) {
+  if (exportTable === "calc_weekly_sku_split_result" && !batchId && !calendarDate) {
     return NextResponse.json(
       { error: "导出周拆分结果时必须提供 calendar_date 或 batchId" },
       { status: 400 },
@@ -60,10 +60,10 @@ export async function GET(request: NextRequest) {
     calendarDate,
     searchKey,
     searchValue,
-    scBu,
-    lpCode,
-    pl5Code,
-    upn,
+    businessUnit,
+    channelCode,
+    categoryCode,
+    sku,
     isError,
     errorMessage,
     periodMonth,

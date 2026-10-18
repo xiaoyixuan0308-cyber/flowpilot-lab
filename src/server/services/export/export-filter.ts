@@ -46,13 +46,13 @@ export function applyLoadedScopeFilters(
   return rows.filter((row) => {
     const periodMonth = normalizeRowValue(row.period_month);
     const calendarDate = normalizeRowValue(row.calendar_date);
-    const scBu = normalizeRowValue(row.sc_bu);
+    const businessUnit = normalizeRowValue(row.business_unit);
     const year = normalizeRowValue(row.year);
     const month = normalizeRowValue(row.month);
     const abcClass = normalizeRowValue(row.abc_class);
-    const pl5Code = normalizeRowValue(row.pl5_code);
-    const lpCode = normalizeRowValue(row.lp_code || row.dealerlpcode);
-    const upn = normalizeRowValue(row.upn);
+    const categoryCode = normalizeRowValue(row.category_code);
+    const channelCode = normalizeRowValue(row.channel_code || row.dealer_channel_code);
+    const sku = normalizeRowValue(row.sku);
     const status = normalizeRowValue(row.status);
     const hasQuota = normalizeBooleanFlag(row.has_quota);
     const hasHistory = normalizeBooleanFlag(row.has_history);
@@ -60,19 +60,19 @@ export function applyLoadedScopeFilters(
     const errorMessage = normalizeRowValue(row.error_message);
     const tolerance = abcClass === "A" ? "是" : "否";
 
-    if (table === "calc_upn_split_result" || table === "calc_upn_split_trace") {
-      if (filters.scBu && scBu !== filters.scBu) return false;
-      if (filters.lpCode && lpCode !== filters.lpCode) return false;
-      if (filters.pl5Code && pl5Code !== filters.pl5Code) return false;
-      if (filters.upn && upn !== filters.upn) return false;
+    if (table === "calc_sku_split_result" || table === "calc_sku_split_trace") {
+      if (filters.businessUnit && businessUnit !== filters.businessUnit) return false;
+      if (filters.channelCode && channelCode !== filters.channelCode) return false;
+      if (filters.categoryCode && categoryCode !== filters.categoryCode) return false;
+      if (filters.sku && sku !== filters.sku) return false;
       if (filters.isError && isError !== filters.isError) return false;
     }
 
-    if (table === "calc_weekly_upn_split_result") {
-      if (filters.scBu && scBu !== filters.scBu) return false;
-      if (filters.lpCode && lpCode !== filters.lpCode) return false;
-      if (filters.pl5Code && pl5Code !== filters.pl5Code) return false;
-      if (filters.upn && upn !== filters.upn) return false;
+    if (table === "calc_weekly_sku_split_result") {
+      if (filters.businessUnit && businessUnit !== filters.businessUnit) return false;
+      if (filters.channelCode && channelCode !== filters.channelCode) return false;
+      if (filters.categoryCode && categoryCode !== filters.categoryCode) return false;
+      if (filters.sku && sku !== filters.sku) return false;
       if (filters.calendarDate && calendarDate !== filters.calendarDate) return false;
     }
 

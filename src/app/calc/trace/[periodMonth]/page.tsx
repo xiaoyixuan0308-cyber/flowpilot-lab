@@ -11,19 +11,19 @@ import { getCalcBatchDetail, listLoadedCalcTraceRowsByPeriodMonth } from "@/serv
 
 interface TraceBatchPageProps {
   params: Promise<{ periodMonth: string }>;
-  searchParams: Promise<{ bu?: string; lp?: string; pl5?: string; upn?: string }>;
+  searchParams: Promise<{ bu?: string; channel?: string; category?: string; sku?: string }>;
 }
 
 type TraceRow = {
-  sc_bu: string;
-  dealerlpcode: string;
-  pl5_code: string;
-  upn: string;
+  business_unit: string;
+  dealer_channel_code: string;
+  category_code: string;
+  sku: string;
   h_t2_purchase_mtd: string;
   e_t2_mix_portion: string;
-  t_pl5_purchase_m2: string;
-  u_pl5_purchase_m1: string;
-  v_pl5_purchase_m0_fcst: string;
+  t_category_purchase_m2: string;
+  u_category_purchase_m1: string;
+  v_category_purchase_m0_fcst: string;
   f_t2_purchase_3m_avg: string;
   g_t2_purchase_m0: string;
   j_opening_inventory: string;
@@ -33,15 +33,15 @@ type TraceRow = {
   current_dioh: string;
   replenish_gap_to_30_qty: string;
   w_mtg_allocate_qty: string;
-  j_star_pl5_inventory: string;
-  i_star_pl5_mtg: string;
+  j_star_category_inventory: string;
+  i_star_category_mtg: string;
   x_after_allocate_days: string;
   m_original_target_inventory: string;
   n_new_target_inventory: string;
   o_final_target_inventory: string;
   p_theoretical_replenish: string;
   q_actual_theoretical: string;
-  q_star_pl5_theoretical: string;
+  q_star_category_theoretical: string;
   r_base_replenish: string;
   s_tolerance_replenish: string;
   t_adjusted_dioh: string;
@@ -51,15 +51,15 @@ type TraceRow = {
 };
 
 const columns: Column<TraceRow>[] = [
-  { key: "sc_bu", header: "业务单元" },
-  { key: "dealerlpcode", header: "LP" },
-  { key: "pl5_code", header: "产品分类" },
-  { key: "upn", header: "SKU" },
+  { key: "business_unit", header: "业务单元" },
+  { key: "dealer_channel_code", header: "渠道" },
+  { key: "category_code", header: "产品分类" },
+  { key: "sku", header: "SKU" },
   { key: "h_t2_purchase_mtd", header: "H" },
   { key: "e_t2_mix_portion", header: "E" },
-  { key: "t_pl5_purchase_m2", header: "T" },
-  { key: "u_pl5_purchase_m1", header: "U" },
-  { key: "v_pl5_purchase_m0_fcst", header: "V" },
+  { key: "t_category_purchase_m2", header: "T" },
+  { key: "u_category_purchase_m1", header: "U" },
+  { key: "v_category_purchase_m0_fcst", header: "V" },
   { key: "f_t2_purchase_3m_avg", header: "F" },
   { key: "g_t2_purchase_m0", header: "G" },
   { key: "j_opening_inventory", header: "J" },
@@ -69,15 +69,15 @@ const columns: Column<TraceRow>[] = [
   { key: "current_dioh", header: "当前库存天数" },
   { key: "replenish_gap_to_30_qty", header: "30天补货缺口" },
   { key: "w_mtg_allocate_qty", header: "W" },
-  { key: "j_star_pl5_inventory", header: "J*" },
-  { key: "i_star_pl5_mtg", header: "I*" },
+  { key: "j_star_category_inventory", header: "J*" },
+  { key: "i_star_category_mtg", header: "I*" },
   { key: "x_after_allocate_days", header: "X" },
   { key: "m_original_target_inventory", header: "M" },
   { key: "n_new_target_inventory", header: "N" },
   { key: "o_final_target_inventory", header: "O" },
   { key: "p_theoretical_replenish", header: "P" },
   { key: "q_actual_theoretical", header: "Q" },
-  { key: "q_star_pl5_theoretical", header: "Q*" },
+  { key: "q_star_category_theoretical", header: "Q*" },
   { key: "r_base_replenish", header: "R", className: "bg-yellow-50 font-medium" },
   { key: "s_tolerance_replenish", header: "S", className: "bg-yellow-50 font-medium" },
   { key: "t_adjusted_dioh", header: "T", className: "bg-yellow-50 font-medium" },
@@ -114,15 +114,15 @@ export default async function TraceBatchPage({ params, searchParams }: TraceBatc
   }
 
   const data: TraceRow[] = traces.map((row) => ({
-    sc_bu: row.sc_bu,
-    dealerlpcode: row.dealerlpcode,
-    pl5_code: row.pl5_code,
-    upn: row.upn,
+    business_unit: row.business_unit,
+    dealer_channel_code: row.dealer_channel_code,
+    category_code: row.category_code,
+    sku: row.sku,
     h_t2_purchase_mtd: row.h_t2_purchase_mtd?.toString() ?? "",
     e_t2_mix_portion: row.e_t2_mix_portion?.toString() ?? "",
-    t_pl5_purchase_m2: row.t_pl5_purchase_m2?.toString() ?? "",
-    u_pl5_purchase_m1: row.u_pl5_purchase_m1?.toString() ?? "",
-    v_pl5_purchase_m0_fcst: row.v_pl5_purchase_m0_fcst?.toString() ?? "",
+    t_category_purchase_m2: row.t_category_purchase_m2?.toString() ?? "",
+    u_category_purchase_m1: row.u_category_purchase_m1?.toString() ?? "",
+    v_category_purchase_m0_fcst: row.v_category_purchase_m0_fcst?.toString() ?? "",
     f_t2_purchase_3m_avg: row.f_t2_purchase_3m_avg?.toString() ?? "",
     g_t2_purchase_m0: row.g_t2_purchase_m0?.toString() ?? "",
     j_opening_inventory: row.j_opening_inventory?.toString() ?? "",
@@ -132,15 +132,15 @@ export default async function TraceBatchPage({ params, searchParams }: TraceBatc
     current_dioh: row.current_dioh?.toString() ?? "",
     replenish_gap_to_30_qty: row.replenish_gap_to_30_qty?.toString() ?? "",
     w_mtg_allocate_qty: row.w_mtg_allocate_qty?.toString() ?? "",
-    j_star_pl5_inventory: row.j_star_pl5_inventory?.toString() ?? "",
-    i_star_pl5_mtg: row.i_star_pl5_mtg?.toString() ?? "",
+    j_star_category_inventory: row.j_star_category_inventory?.toString() ?? "",
+    i_star_category_mtg: row.i_star_category_mtg?.toString() ?? "",
     x_after_allocate_days: row.x_after_allocate_days?.toString() ?? "",
     m_original_target_inventory: row.m_original_target_inventory?.toString() ?? "",
     n_new_target_inventory: row.n_new_target_inventory?.toString() ?? "",
     o_final_target_inventory: row.o_final_target_inventory?.toString() ?? "",
     p_theoretical_replenish: row.p_theoretical_replenish?.toString() ?? "",
     q_actual_theoretical: row.q_actual_theoretical?.toString() ?? "",
-    q_star_pl5_theoretical: row.q_star_pl5_theoretical?.toString() ?? "",
+    q_star_category_theoretical: row.q_star_category_theoretical?.toString() ?? "",
     r_base_replenish: row.r_base_replenish?.toString() ?? "",
     s_tolerance_replenish: row.s_tolerance_replenish?.toString() ?? "",
     t_adjusted_dioh: row.t_adjusted_dioh?.toString() ?? "",
@@ -154,13 +154,13 @@ export default async function TraceBatchPage({ params, searchParams }: TraceBatc
     { label: "异常", value: "Y" },
   ];
   const traceCount = data.length;
-  const uniqueUpnCount = Array.from(new Set(data.map((row) => row.upn))).length;
+  const uniqueSkuCount = Array.from(new Set(data.map((row) => row.sku))).length;
   const errorCount = data.filter((row) => row.is_error === "Y").length;
   const linkedQuery = new URLSearchParams();
   if (query.bu) linkedQuery.set("bu", query.bu);
-  if (query.lp) linkedQuery.set("lp", query.lp);
-  if (query.pl5) linkedQuery.set("pl5", query.pl5);
-  if (query.upn) linkedQuery.set("upn", query.upn);
+  if (query.channel) linkedQuery.set("channel", query.channel);
+  if (query.category) linkedQuery.set("category", query.category);
+  if (query.sku) linkedQuery.set("sku", query.sku);
   const linkedQueryString = linkedQuery.toString();
 
   return (
@@ -186,7 +186,7 @@ export default async function TraceBatchPage({ params, searchParams }: TraceBatc
               计算流程展示
             </Link>
             <a
-              href={`/api/data/export?table=calc_upn_split_trace&period_month=${periodMonth}&scope=filtered`}
+              href={`/api/data/export?table=calc_sku_split_trace&period_month=${periodMonth}&scope=filtered`}
               download
               className="whitespace-nowrap text-primary underline"
             >
@@ -207,7 +207,7 @@ export default async function TraceBatchPage({ params, searchParams }: TraceBatc
         <SummaryStatsGrid
           items={[
             { label: "Trace行数", value: traceCount },
-            { label: "SKU数", value: uniqueUpnCount },
+            { label: "SKU数", value: uniqueSkuCount },
             { label: "异常行数", value: errorCount },
           ]}
         />
@@ -217,15 +217,15 @@ export default async function TraceBatchPage({ params, searchParams }: TraceBatc
         title="过程追踪明细"
         columns={columns}
         data={data}
-        exportTable="calc_upn_split_trace"
+        exportTable="calc_sku_split_trace"
         exportParams={{ period_month: periodMonth }}
         dimensionFilters={{
-          keys: { bu: "sc_bu", lp: "dealerlpcode", pl5: "pl5_code", upn: "upn" },
-          initialValues: { bu: query.bu, lp: query.lp, pl5: query.pl5, upn: query.upn },
+          keys: { bu: "business_unit", channel: "dealer_channel_code", category: "category_code", sku: "sku" },
+          initialValues: { bu: query.bu, channel: query.channel, category: query.category, sku: query.sku },
         }}
         filters={[
           {
-            key: "pl5_code",
+            key: "category_code",
             label: "产品分类",
             placeholder: "全部产品分类",
             sort: "asc",

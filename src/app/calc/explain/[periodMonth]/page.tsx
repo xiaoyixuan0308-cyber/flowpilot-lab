@@ -14,9 +14,9 @@ import { CalculationExplainQueryForm } from "./calculation-explain-query-form";
 interface CalculationExplainPageProps {
   params: Promise<{ periodMonth: string }>;
   searchParams: Promise<{
-    lp?: string;
-    pl5?: string;
-    upn?: string;
+    channel?: string;
+    category?: string;
+    sku?: string;
     source?: string;
   }>;
 }
@@ -58,9 +58,9 @@ export default async function CalculationExplainPage({
   const { periodMonth } = await params;
   const query = await searchParams;
   const view = await getCalculationExplainView(periodMonth, {
-    lpCode: query.lp,
-    pl5Code: query.pl5,
-    upn: query.upn,
+    channelCode: query.channel,
+    categoryCode: query.category,
+    sku: query.sku,
     sourceKey: query.source,
   });
 
@@ -81,9 +81,9 @@ export default async function CalculationExplainPage({
   }
 
   const selected = view.selectedRow;
-  const lpValue = query.lp ?? selected?.dealerlpcode ?? "";
-  const pl5Value = query.pl5 ?? selected?.pl5_code ?? "";
-  const upnValue = query.upn ?? selected?.upn ?? "";
+  const channelValue = query.channel ?? selected?.dealer_channel_code ?? "";
+  const categoryValue = query.category ?? selected?.category_code ?? "";
+  const skuValue = query.sku ?? selected?.sku ?? "";
   const sourceValue = query.source ?? "";
   const visibleSteps = sourceValue
     ? view.steps.filter((step) => step.sourceKey === sourceValue)
@@ -91,9 +91,9 @@ export default async function CalculationExplainPage({
   const warnCount = visibleSteps.filter((step) => step.status === "warn").length;
   const okCount = visibleSteps.filter((step) => step.status === "ok").length;
   const optionRows = view.traces.map((row) => ({
-    lp: row.dealerlpcode,
-    pl5: row.pl5_code,
-    upn: row.upn,
+    channel: row.dealer_channel_code,
+    category: row.category_code,
+    sku: row.sku,
   }));
 
   return (
@@ -124,41 +124,41 @@ export default async function CalculationExplainPage({
       >
         <CalculationExplainQueryForm
           periodMonth={periodMonth}
-          lpValue={lpValue}
-          pl5Value={pl5Value}
-          upnValue={upnValue}
+          channelValue={channelValue}
+          categoryValue={categoryValue}
+          skuValue={skuValue}
           sourceValue={sourceValue}
-          lpOptions={view.options.lp}
+          channelOptions={view.options.channel}
           sourceOptions={sourceOptions}
           optionRows={optionRows}
-          pl5NameByCode={view.names.pl5NameByCode}
+          categoryNameByCode={view.names.categoryNameByCode}
         />
         <form className="hidden" action={`/calc/explain/${periodMonth}`}>
           <label className="grid gap-1 text-sm">
-            <span className="text-muted-foreground">LP</span>
+            <span className="text-muted-foreground">渠道</span>
             <select
-              name="lp"
-              defaultValue={lpValue}
+              name="channel"
+              defaultValue={channelValue}
               className="h-9 rounded-md border border-input bg-background px-3 text-sm"
             >
-              <option value="">全部LP</option>
-              {optionList(view.options.lp, lpValue)}
+              <option value="">全部渠道</option>
+              {optionList(view.options.channel, channelValue)}
             </select>
           </label>
           <label className="grid gap-1 text-sm">
             <span className="text-muted-foreground">产品分类</span>
             <select
-              name="pl5"
-              defaultValue={pl5Value}
+              name="category"
+              defaultValue={categoryValue}
               className="h-9 rounded-md border border-input bg-background px-3 text-sm"
             >
               <option value="">全部产品分类</option>
-              {optionList(view.options.pl5, pl5Value)}
+              {optionList(view.options.category, categoryValue)}
             </select>
           </label>
           <label className="grid gap-1 text-sm">
             <span className="text-muted-foreground">SKU</span>
-            <Input name="upn" defaultValue={upnValue} placeholder="输入或粘贴SKU" />
+            <Input name="sku" defaultValue={skuValue} placeholder="输入或粘贴SKU" />
           </label>
           <label className="grid gap-1 text-sm">
             <span className="text-muted-foreground">基础来源</span>
@@ -189,9 +189,9 @@ export default async function CalculationExplainPage({
             <MetaBadgeRow
               items={[
                 { value: view.periodMonth, variant: "secondary" },
-                { value: selected.dealerlpcode, variant: "outline" },
-                { value: selected.pl5_code, variant: "outline" },
-                { value: selected.upn },
+                { value: selected.dealer_channel_code, variant: "outline" },
+                { value: selected.category_code, variant: "outline" },
+                { value: selected.sku },
                 ...(selected.is_error
                   ? [{ value: "异常", variant: "destructive" as const }]
                   : [{ value: "正常", variant: "secondary" as const }]),
@@ -200,8 +200,8 @@ export default async function CalculationExplainPage({
             <SummaryStatsGrid
               columns={4}
               items={[
-                { label: "渠道名称", value: view.names.lpNameByCode[selected.dealerlpcode] ?? selected.dealerlpcode },
-                { label: "产品分类名称", value: view.names.pl5NameByCode[selected.pl5_code] ?? selected.pl5_code },
+                { label: "渠道名称", value: view.names.channelNameByCode[selected.dealer_channel_code] ?? selected.dealer_channel_code },
+                { label: "产品分类名称", value: view.names.categoryNameByCode[selected.category_code] ?? selected.category_code },
                 { label: "当前筛选步骤", value: visibleSteps.length },
                 { label: "需复核步骤", value: warnCount },
               ]}

@@ -24,11 +24,11 @@ export async function GET(request: Request) {
         select: {
           period_month: true,
           status: true,
-          error_upns: true,
+          error_skus: true,
           calculated_at: true,
         },
       }),
-      prisma.calc_weekly_upn_split_batch.findMany({
+      prisma.calc_weekly_sku_split_batch.findMany({
         orderBy: [{ calculated_at: "desc" }, { created_at: "desc" }],
         take: 100,
         select: {
@@ -86,7 +86,7 @@ export async function GET(request: Request) {
   const selectedBatch = selectedWeekly ?? selectedMonthly;
   const status = selectedBatch?.status ?? "NOT_CALCULATED";
   const anomalyCount =
-    (selectedMonthly?.error_upns ?? 0) +
+    (selectedMonthly?.error_skus ?? 0) +
     (selectedWeekly?.status === "PARTIAL" ? 1 : 0);
   const calculatedAt = selectedBatch?.calculated_at ?? null;
 

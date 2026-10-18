@@ -18,7 +18,7 @@ function buildDatabaseUrl(config: Omit<DbEnvConfig, "url">) {
 export function getDbEnvConfig(): DbEnvConfig {
   const host = process.env.DB_HOST || "localhost";
   const port = process.env.DB_PORT || "5432";
-  const database = process.env.DB_NAME || "dsc_poc";
+  const database = process.env.DB_NAME || "app_poc";
   const schema = process.env.DB_SCHEMA || "poc";
   const user = process.env.DB_USER || "postgres";
   const password = process.env.DB_PASSWORD || "";

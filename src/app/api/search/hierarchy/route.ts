@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchHierarchy, type SearchType, type TableType } from "@/server/repositories/search.repository";
 
-const VALID_TYPES: SearchType[] = ["lp", "pl5", "upn"];
+const VALID_TYPES: SearchType[] = ["channel", "category", "sku"];
 const VALID_TABLES: TableType[] = ["monthly", "weekly"];
 
 export async function GET(request: NextRequest) {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   const type = rawType as SearchType;
   if (!VALID_TYPES.includes(type)) {
     return NextResponse.json(
-      { error: `type 必须为 lp / pl5 / upn 之一，收到: ${rawType}` },
+      { error: `type 必须为 channel / category / sku 之一，收到: ${rawType}` },
       { status: 400 }
     );
   }

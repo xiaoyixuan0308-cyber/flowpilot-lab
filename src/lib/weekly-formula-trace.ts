@@ -24,9 +24,9 @@ export interface WeeklyFormulaBatchSource {
 
 export interface WeeklyFormulaRowSource extends Record<string, string | null> {
   id: string;
-  lp_code: string;
-  pl5_code: string;
-  upn: string;
+  channel_code: string;
+  category_code: string;
+  sku: string;
 }
 
 interface RaTraceMeta {
@@ -71,22 +71,22 @@ function resultForCode(
     J: "week_quota_pattern_qty",
     JA: "week_target_pending_qty",
     JB: "week_target_pending_total_qty",
-    YA: "bsc_inventory_qty",
+    YA: "central_warehouse_inventory_qty",
     YB: "intransit_qty",
     YC: "safety_stock_qty",
-    Y: "bsc_available_qty",
+    Y: "central_warehouse_available_qty",
     R: "other_dealer_open_order_or_qty",
     Z: "inventory_status",
     AD: "suggest_qty",
     AM: "unit_price",
     AO: "suggest_amount",
     SA: "system_adjusted_suggest_qty",
-    BB: "bb_upn_abc_class",
+    BB: "bb_sku_abc_class",
     BA: "constraint_types",
-    H_UPN: "upn_month_cap_qty",
+    H_SKU: "sku_month_cap_qty",
     BD: "adjustment_allowed_flag",
     BL: "monthly_remaining_adjustable_qty",
-    BH: "remaining_bsc_available_qty",
+    BH: "remaining_central_warehouse_available_qty",
     BE: "be_original_target_inventory_qty",
     BF: "bf_current_inventory_qty",
     BI: "target_inventory_adjustable_qty",
@@ -133,7 +133,7 @@ function buildRaTraceMeta(
   const candidates = rows
     .filter((row) => {
       const bk = decimal(row.post_suggest_dioh);
-      const bh = decimal(row.remaining_bsc_available_qty);
+      const bh = decimal(row.remaining_central_warehouse_available_qty);
       const bi = decimal(row.target_inventory_adjustable_qty);
       const bl = decimal(row.monthly_remaining_adjustable_qty);
       const am = decimal(row.unit_price);
@@ -142,17 +142,17 @@ function buildRaTraceMeta(
     .sort((left, right) => {
       const bk = decimal(left.post_suggest_dioh)!.comparedTo(decimal(right.post_suggest_dioh)!);
       if (bk !== 0) return bk;
-      return ["lp_code", "pl5_code", "upn"].reduce((comparison, key) => {
+      return ["channel_code", "category_code", "sku"].reduce((comparison, key) => {
         if (comparison !== 0) return comparison;
         return String(left[key]).localeCompare(String(right[key]));
       }, 0);
     });
 
   let remainingGap = gapAmount!;
-  const consumedByUpn = new Map<string, Decimal>();
+  const consumedBySku = new Map<string, Decimal>();
   candidates.forEach((row, index) => {
-    const consumed = consumedByUpn.get(row.upn) ?? new Decimal(0);
-    const bh = Decimal.max(decimal(row.remaining_bsc_available_qty)!.minus(consumed), 0);
+    const consumed = consumedBySku.get(row.sku) ?? new Decimal(0);
+    const bh = Decimal.max(decimal(row.remaining_central_warehouse_available_qty)!.minus(consumed), 0);
     const bl = Decimal.max(decimal(row.monthly_remaining_adjustable_qty)!.minus(consumed), 0);
     const amountLimited = remainingGap
       .div(decimal(row.unit_price)!)
@@ -166,7 +166,7 @@ function buildRaTraceMeta(
     });
     const ra = decimal(row.gap_fill_qty) ?? new Decimal(0);
     remainingGap = Decimal.max(remainingGap.minus(ra.times(decimal(row.unit_price)!)), 0);
-    consumedByUpn.set(row.upn, consumed.plus(ra));
+    consumedBySku.set(row.sku, consumed.plus(ra));
   });
   return metas;
 }
@@ -194,20 +194,20 @@ function buildTrace(
       substituted = String.raw`\max(${v("week_quota_pattern_qty")}-${v("month_delivered_qty")},0)=${texNumber(result)}`;
       branch = decimal(row.week_quota_pattern_qty)?.gt(decimal(row.month_delivered_qty) ?? 0) ? "J-L>0，取J-L" : "J-L<=0，取0";
       break;
-    case "JB": substituted = String.raw`\sum_{LP}JA=${v("week_target_pending_total_qty")}`; branch = "同UPN汇总"; break;
-    case "YA": substituted = String.raw`YA=${v("bsc_inventory_qty")}`; break;
+    case "JB": substituted = String.raw`\sum_{Channel}JA=${v("week_target_pending_total_qty")}`; branch = "同SKU汇总"; break;
+    case "YA": substituted = String.raw`YA=${v("central_warehouse_inventory_qty")}`; break;
     case "YB": substituted = String.raw`YB=${v("intransit_qty")}`; break;
     case "YC": substituted = String.raw`YC=${v("safety_stock_qty")}`; break;
     case "Y":
-      substituted = String.raw`\max(${v("bsc_inventory_qty")}+${v("intransit_qty")}-${v("safety_stock_qty")},0)=${texNumber(result)}`;
-      branch = decimal(row.bsc_available_qty)?.isZero() ? "非负保护后为0" : "库存差为正";
+      substituted = String.raw`\max(${v("central_warehouse_inventory_qty")}+${v("intransit_qty")}-${v("safety_stock_qty")},0)=${texNumber(result)}`;
+      branch = decimal(row.central_warehouse_available_qty)?.isZero() ? "非负保护后为0" : "库存差为正";
       break;
     case "R": {
       const s = decimal(row.s_open_order_or_total_qty);
       const r = decimal(row.other_dealer_open_order_or_qty);
-      const lpTotal = s && r ? s.minus(r).toFixed(10) : null;
-      substituted = String.raw`${v("s_open_order_or_total_qty")}-${texNumber(lpTotal)}=${texNumber(result)}`;
-      branch = "扣除Dealer Type=LP的OR订单";
+      const channelTotal = s && r ? s.minus(r).toFixed(10) : null;
+      substituted = String.raw`${v("s_open_order_or_total_qty")}-${texNumber(channelTotal)}=${texNumber(result)}`;
+      branch = "扣除Dealer Type=渠道的OR订单";
       break;
     }
     case "Z":
@@ -215,7 +215,7 @@ function buildTrace(
         substituted = String.raw`Z=\varnothing`;
         branch = "JB、R或Y依赖未知";
       } else {
-        substituted = String.raw`${v("week_target_pending_total_qty")}+${v("other_dealer_open_order_or_qty")}\mathrel{${row.inventory_status === "STOP" ? ">" : "\\le"}}${v("bsc_available_qty")}`;
+        substituted = String.raw`${v("week_target_pending_total_qty")}+${v("other_dealer_open_order_or_qty")}\mathrel{${row.inventory_status === "STOP" ? ">" : "\\le"}}${v("central_warehouse_available_qty")}`;
         branch = row.inventory_status === "STOP" ? "库存不足，STOP" : "库存足够，OK";
       }
       break;
@@ -226,8 +226,8 @@ function buildTrace(
       } else if (row.inventory_status === "OK") {
         substituted = String.raw`AD=JA=${v("week_target_pending_qty")}`;
         branch = "Z=OK";
-      } else if ((decimal(row.bsc_available_qty)?.minus(decimal(row.other_dealer_open_order_or_qty) ?? 0).gt(0))) {
-        substituted = String.raw`\frac{${v("week_target_pending_qty")}}{${v("week_target_pending_total_qty")}}\times(${v("bsc_available_qty")}-${v("other_dealer_open_order_or_qty")})=${texNumber(result)}`;
+      } else if ((decimal(row.central_warehouse_available_qty)?.minus(decimal(row.other_dealer_open_order_or_qty) ?? 0).gt(0))) {
+        substituted = String.raw`\frac{${v("week_target_pending_qty")}}{${v("week_target_pending_total_qty")}}\times(${v("central_warehouse_available_qty")}-${v("other_dealer_open_order_or_qty")})=${texNumber(result)}`;
         branch = "Z=STOP且Y-R>0，按比例分配";
       } else {
         substituted = String.raw`AD=0`;
@@ -271,7 +271,7 @@ function buildTrace(
       }
       break;
     }
-    case "H_UPN": substituted = String.raw`\sum H_{row}=${v("upn_month_cap_qty")}`; branch = "同UPN汇总"; break;
+    case "H_SKU": substituted = String.raw`\sum H_{row}=${v("sku_month_cap_qty")}`; branch = "同SKU汇总"; break;
     case "BB": substituted = String.raw`BB=\mathrm{ABCClass}`; break;
     case "BA": substituted = String.raw`BA=\mathrm{ConstraintTypes}`; branch = row.constraint_types ?? "无约束"; break;
     case "BD":
@@ -293,17 +293,17 @@ function buildTrace(
         substituted = String.raw`BL=\varnothing`;
         branch = "BD或上限依赖未知";
       } else if (row.constraint_types?.includes("月不能超")) {
-        substituted = String.raw`${v("upn_month_cap_qty")}-${v("o_month_delivered_total_qty")}-${v("week_target_pending_total_qty")}=${texNumber(result)}`;
+        substituted = String.raw`${v("sku_month_cap_qty")}-${v("o_month_delivered_total_qty")}-${v("week_target_pending_total_qty")}=${texNumber(result)}`;
         branch = row.adjustment_allowed_flag === "Y" ? "按月剩余额度限制" : "月额度已满，取0";
       } else if (row.adjustment_allowed_flag === "Y") {
-        substituted = String.raw`BL=Y=${v("bsc_available_qty")}`;
+        substituted = String.raw`BL=Y=${v("central_warehouse_available_qty")}`;
         branch = "无月约束，使用可发库存";
       } else {
         substituted = String.raw`BL=0`;
         branch = "禁止补差";
       }
       break;
-    case "BH": substituted = String.raw`\max(${v("bsc_available_qty")}-${v("other_dealer_open_order_or_qty")}-\sum AD,0)=${texNumber(result)}`; branch = "同UPN共享上限"; break;
+    case "BH": substituted = String.raw`\max(${v("central_warehouse_available_qty")}-${v("other_dealer_open_order_or_qty")}-\sum AD,0)=${texNumber(result)}`; branch = "同SKU共享上限"; break;
     case "BE": substituted = String.raw`BE=${v("be_original_target_inventory_qty")}`; break;
     case "BF": substituted = String.raw`BF=J_{monthly}=${v("bf_current_inventory_qty")}`; break;
     case "BI": substituted = String.raw`\max(${v("be_original_target_inventory_qty")}-${v("bf_current_inventory_qty")}-${v("suggest_qty")},0)=${texNumber(result)}`; branch = "按BE、BF和AD计算并做非负保护"; break;
@@ -396,6 +396,6 @@ export function buildWeeklyBatchFormulaTrace(
   rows: WeeklyFormulaRowSource[],
   batch: WeeklyFormulaBatchSource,
 ) {
-  const fallbackRow = rows[0] ?? ({ id: "", lp_code: "", pl5_code: "", upn: "" } as WeeklyFormulaRowSource);
+  const fallbackRow = rows[0] ?? ({ id: "", channel_code: "", category_code: "", sku: "" } as WeeklyFormulaRowSource);
   return buildTrace(code, fallbackRow, batch);
 }

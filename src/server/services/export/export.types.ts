@@ -7,10 +7,10 @@ export interface ExportRequest {
   calendarDate?: string | null;
   searchKey?: string | null;
   searchValue?: string | null;
-  scBu?: string | null;
-  lpCode?: string | null;
-  pl5Code?: string | null;
-  upn?: string | null;
+  businessUnit?: string | null;
+  channelCode?: string | null;
+  categoryCode?: string | null;
+  sku?: string | null;
   isError?: string | null;
   errorMessage?: string | null;
   periodMonth?: string | null;

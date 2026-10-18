@@ -4,12 +4,12 @@ import { getChildren, type TableType } from "@/server/repositories/search.reposi
 const VALID_TABLES: TableType[] = ["monthly", "weekly"];
 
 export async function GET(request: NextRequest) {
-  const rawLp = (request.nextUrl.searchParams.get("lp") ?? "").trim();
-  const rawPl5 = (request.nextUrl.searchParams.get("pl5") ?? "").trim();
+  const rawChannel = (request.nextUrl.searchParams.get("channel") ?? "").trim();
+  const rawCategory = (request.nextUrl.searchParams.get("category") ?? "").trim();
   const rawTable = (request.nextUrl.searchParams.get("table") ?? "monthly").toLowerCase();
 
-  if (!rawLp) {
-    return NextResponse.json({ error: "请提供 lp 参数" }, { status: 400 });
+  if (!rawChannel) {
+    return NextResponse.json({ error: "请提供 channel 参数" }, { status: 400 });
   }
 
   const table = (
@@ -27,28 +27,28 @@ export async function GET(request: NextRequest) {
 
   try {
     const result = await getChildren({
-      lp: rawLp,
-      pl5: rawPl5 || undefined,
+      channel: rawChannel,
+      category: rawCategory || undefined,
       table,
     });
 
     if (!result) {
       return NextResponse.json({
-        lp: rawLp,
-        pl5: rawPl5 || null,
+        channel: rawChannel,
+        category: rawCategory || null,
         table,
-        pl5s: [],
-        upns: [],
+        categories: [],
+        skus: [],
       });
     }
 
     return NextResponse.json({
-      lp: result.lp,
-      lp_name: result.lp_name,
-      pl5: rawPl5 || null,
+      channel: result.channel,
+      channel_name: result.channel_name,
+      category: rawCategory || null,
       table,
-      pl5s: result.pl5s,
-      upns: result.upns,
+      categories: result.categories,
+      skus: result.skus,
     });
   } catch (error) {
     return NextResponse.json(

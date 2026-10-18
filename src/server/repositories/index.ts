@@ -3,7 +3,7 @@ export * from "./scope.repository";
 export * from "./calc.repository";
 export * from "./error.repository";
 export * from "./search.repository";
-export * from "./weekly-upn-split.repository";
+export * from "./weekly-sku-split.repository";
 export * from "./weekly-input.repository";
 export * from "./weekly-calc.repository";
 export * from "./calculation-lock.repository";

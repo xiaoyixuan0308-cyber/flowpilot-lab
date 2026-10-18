@@ -2,26 +2,26 @@ import { getPrevMonth, getYearMonth } from "./date-utils";
 
 export const SCALE_PERIOD_MONTH = "2026-06-01";
 
-function buildHistoryRows(periodMonth: string, lpCode: string, lpName: string, pl5Code: string, pl5Name: string, upn: string, base: number) {
+function buildHistoryRows(periodMonth: string, channelCode: string, channelName: string, categoryCode: string, categoryName: string, sku: string, base: number) {
   const months = Array.from({ length: 6 }, (_, i) => getPrevMonth(periodMonth, 6 - i));
   const { year, month } = getYearMonth(periodMonth);
   return [
     ...months.map((item, idx) => ({
-      parentdealerlpcode: lpCode,
-      parentdealerlpname: lpName,
-      upn,
-      pl5_code: pl5Code,
-      pl5_name: pl5Name,
+      parent_dealer_channel_code: channelCode,
+      parent_dealer_channel_name: channelName,
+      sku,
+      category_code: categoryCode,
+      category_name: categoryName,
       qty: base + idx,
       year: item.year,
       month: item.month,
     })),
     {
-      parentdealerlpcode: lpCode,
-      parentdealerlpname: lpName,
-      upn,
-      pl5_code: pl5Code,
-      pl5_name: pl5Name,
+      parent_dealer_channel_code: channelCode,
+      parent_dealer_channel_name: channelName,
+      sku,
+      category_code: categoryCode,
+      category_name: categoryName,
       qty: Math.max(Math.floor(base / 4), 0),
       year,
       month,
@@ -32,101 +32,101 @@ function buildHistoryRows(periodMonth: string, lpCode: string, lpName: string, p
 export function buildScaleSeedFixtures(
   periodMonth: string = SCALE_PERIOD_MONTH,
   options?: {
-    lpCount?: number;
-    pl5Count?: number;
-    upnPerLpPl5?: number;
+    channelCount?: number;
+    categoryCount?: number;
+    skuPerChannelCategory?: number;
   },
 ) {
   const { year, month } = getYearMonth(periodMonth);
   const periodDate = new Date(`${periodMonth}T08:00:00+08:00`);
-  const lpCount = options?.lpCount ?? 3;
-  const pl5Count = options?.pl5Count ?? 4;
-  const upnPerLpPl5 = options?.upnPerLpPl5 ?? 3;
+  const channelCount = options?.channelCount ?? 3;
+  const categoryCount = options?.categoryCount ?? 4;
+  const skuPerChannelCategory = options?.skuPerChannelCategory ?? 3;
 
-  const lpDefs = Array.from({ length: lpCount }, (_, i) => ({
-    code: `LP${String(101 + i).padStart(3, "0")}`,
-    name: `LP ${101 + i}`,
+  const channelDefs = Array.from({ length: channelCount }, (_, i) => ({
+    code: `Channel${String(101 + i).padStart(3, "0")}`,
+    name: `Channel ${101 + i}`,
   }));
-  const pl5Defs = Array.from({ length: pl5Count }, (_, i) => ({
-    code: `PL5${String.fromCharCode(65 + i)}`,
-    name: `PL5 ${String.fromCharCode(65 + i)}`,
+  const categoryDefs = Array.from({ length: categoryCount }, (_, i) => ({
+    code: `Category${String.fromCharCode(65 + i)}`,
+    name: `Category ${String.fromCharCode(65 + i)}`,
   }));
 
-  const fcstLpPl5 = [];
-  const fcstT2Pl5 = [];
+  const fcstChannelCategory = [];
+  const fcstT2Category = [];
   const allocations = [];
-  const activeUpns = [];
+  const activeSkus = [];
   const inventories = [];
   const diohTargets = [];
   const t2Purchases = [];
 
-  let upnIndex = 1;
-  for (const [lpIdx, lp] of lpDefs.entries()) {
-    for (const [pl5Idx, pl5] of pl5Defs.entries()) {
-      const fcstQty = 60 + lpIdx * 20 + pl5Idx * 10;
-      fcstLpPl5.push({
-        dealerlpcode: lp.code,
-        dealerlpname: lp.name,
-        pl5_code: pl5.code,
-        pl5_name: pl5.name,
+  let skuIndex = 1;
+  for (const [channelIdx, channel] of channelDefs.entries()) {
+    for (const [categoryIdx, category] of categoryDefs.entries()) {
+      const fcstQty = 60 + channelIdx * 20 + categoryIdx * 10;
+      fcstChannelCategory.push({
+        dealer_channel_code: channel.code,
+        dealer_channel_name: channel.name,
+        category_code: category.code,
+        category_name: category.name,
         fcst_qty: fcstQty,
         year,
         month,
       });
-      fcstT2Pl5.push({
-        parentdealerlpcode: lp.code,
-        parentdealerlpname: lp.name,
-        pl5_code: pl5.code,
-        pl5_name: pl5.name,
+      fcstT2Category.push({
+        parent_dealer_channel_code: channel.code,
+        parent_dealer_channel_name: channel.name,
+        category_code: category.code,
+        category_name: category.name,
         fcst_qty: fcstQty - 15,
         year,
         month,
       });
       allocations.push({
         period_month: periodDate,
-        dealerlpcode: lp.code,
-        dealerlpname: lp.name,
-        pl5_code: pl5.code,
-        pl5_name: pl5.name,
+        dealer_channel_code: channel.code,
+        dealer_channel_name: channel.name,
+        category_code: category.code,
+        category_name: category.name,
         allocate_qty: fcstQty,
       });
 
-      for (let i = 0; i < upnPerLpPl5; i++) {
-        const upn = `UPN-S${String(upnIndex).padStart(3, "0")}`;
-        upnIndex += 1;
-        activeUpns.push({
-          dealerlpcode: lp.code,
-          dealerlpname: lp.name,
-          pl5_code: pl5.code,
-          pl5_name: pl5.name,
-          upn,
+      for (let i = 0; i < skuPerChannelCategory; i++) {
+        const sku = `SKU-S${String(skuIndex).padStart(3, "0")}`;
+        skuIndex += 1;
+        activeSkus.push({
+          dealer_channel_code: channel.code,
+          dealer_channel_name: channel.name,
+          category_code: category.code,
+          category_name: category.name,
+          sku,
           year,
           month,
         });
         inventories.push({
-          dealerlpcode: lp.code,
-          dealerlpname: lp.name,
-          upn,
-          qty: 10 + i * 5 + lpIdx * 3 + pl5Idx * 2,
+          dealer_channel_code: channel.code,
+          dealer_channel_name: channel.name,
+          sku,
+          qty: 10 + i * 5 + channelIdx * 3 + categoryIdx * 2,
           year,
           month,
         });
         diohTargets.push({
-          dealerlpcode: lp.code,
-          dealerlpname: lp.name,
-          upn,
+          dealer_channel_code: channel.code,
+          dealer_channel_name: channel.name,
+          sku,
           abc_class: i % 2 === 0 ? "A" : "B",
-          dioh_days: 25 + i * 5 + pl5Idx * 3,
+          dioh_days: 25 + i * 5 + categoryIdx * 3,
         });
         t2Purchases.push(
           ...buildHistoryRows(
             periodMonth,
-            lp.code,
-            lp.name,
-            pl5.code,
-            pl5.name,
-            upn,
-            8 + i * 2 + lpIdx + pl5Idx,
+            channel.code,
+            channel.name,
+            category.code,
+            category.name,
+            sku,
+            8 + i * 2 + channelIdx + categoryIdx,
           ),
         );
       }
@@ -135,10 +135,10 @@ export function buildScaleSeedFixtures(
 
   return {
     periodMonth,
-    fcstLpPl5,
-    fcstT2Pl5,
+    fcstChannelCategory,
+    fcstT2Category,
     allocations,
-    activeUpns,
+    activeSkus,
     inventories,
     diohTargets,
     t2Purchases,

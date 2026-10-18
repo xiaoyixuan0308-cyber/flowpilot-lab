@@ -12,69 +12,69 @@ function weeklyTableRef(tableName: string) {
   return `${quoteIdentifier(WEEKLY_INPUT_TABLE_SCHEMA)}.${quoteIdentifier(tableName)}`;
 }
 
-export interface DealerUpnDnRow {
+export interface DealerSkuDnRow {
   id: string;
   created_on: string | null;
   sold_to_pt: string | null;
-  sc_bu: string;
+  business_unit: string;
   dealer_type: string;
   material: string | null;
   delivery_qty: string;
 }
 
-export interface DealerUpnOpenOrderRow {
+export interface DealerSkuOpenOrderRow {
   id: string;
   customer: string | null;
-  sc_bu: string;
+  business_unit: string;
   dealer_type: string | null;
   material: string | null;
   dctp: string | null;
   open_qty: string;
 }
 
-export interface BscUpnInventoryRow {
+export interface CentralWarehouseSkuInventoryRow {
   id: string;
   material: string;
   sloc: string | null;
   unrestricted_qty: string;
 }
 
-export interface BscUpnIntransitRow {
+export interface CentralWarehouseSkuIntransitRow {
   id: string;
   material: string;
   forecast_date: string | null;
   intransit_qty: string;
 }
 
-export interface UpnSafetyStockRow {
+export interface SkuSafetyStockRow {
   id: string;
-  upn: string;
+  sku: string;
   safety_stock_qty: string;
 }
 
-export interface UpnConstraintRow {
+export interface SkuConstraintRow {
   id: string;
   period_month: string;
-  sc_bu: string;
-  upn: string;
+  business_unit: string;
+  sku: string;
   constraint_type: string;
   source_system: string;
 }
 
-export interface UpnBundleRow {
+export interface SkuBundleRow {
   id: string;
-  upn: string;
+  sku: string;
   bundle_qty: string;
   source_system: string;
 }
 
-export interface LpUpnPurchasePriceRow {
+export interface ChannelSkuPurchasePriceRow {
   id: string;
   dealer_code: string;
   dealer_type: string;
-  upn: string;
-  bsc_std_sell_price: string | null;
-  bsc_std_sell_price_vat: string | null;
+  sku: string;
+  central_warehouse_std_sell_price: string | null;
+  central_warehouse_std_sell_price_vat: string | null;
   source_sell_price: string | null;
   source_sell_price_vat: string | null;
   source_currency: string;
@@ -82,7 +82,7 @@ export interface LpUpnPurchasePriceRow {
 }
 
 export interface CalendarPatternWeeklyRow {
-  sc_bu: string;
+  business_unit: string;
   period_month: string;
   month_start_date: string;
   week_start_date: string;
@@ -93,7 +93,7 @@ export interface CalendarPatternWeeklyRow {
 
 export interface WeeklyAmountThresholdRow {
   id: string;
-  sc_bu: string;
+  business_unit: string;
   overage_threshold_pct: string;
   shortfall_threshold_pct: string;
   source_system: string;
@@ -103,7 +103,7 @@ export interface BuPatternAmountWeeklyRow {
   id: string;
   period_week: string;
   period_month: string;
-  sc_bu: string;
+  business_unit: string;
   actual_amount: string | null;
   month_target_amount: string;
   month_limit_amount: string;
@@ -145,119 +145,119 @@ async function queryWeeklyInputRows<T>(tableName: string, query: string) {
   return prisma.$queryRawUnsafe<T[]>(query);
 }
 
-export async function listLoadedDealerUpnDnRows() {
-  return queryWeeklyInputRows<DealerUpnDnRow>("ods_dealer_upn_dn", `
+export async function listLoadedDealerSkuDnRows() {
+  return queryWeeklyInputRows<DealerSkuDnRow>("ods_dealer_sku_dn", `
     select
       id::text as id,
       to_char(created_on, 'YYYY-MM-DD') as created_on,
       sold_to_pt,
-      sc_bu,
+      business_unit,
       dealer_type,
       material,
       delivery_qty::text as delivery_qty
-    from ${weeklyTableRef("ods_dealer_upn_dn")}
+    from ${weeklyTableRef("ods_dealer_sku_dn")}
     order by created_on desc nulls last, insert_dt desc nulls last
     limit 10000
   `);
 }
 
-export async function listLoadedDealerUpnOpenOrderRows() {
-  return queryWeeklyInputRows<DealerUpnOpenOrderRow>("ods_dealer_upn_open_order", `
+export async function listLoadedDealerSkuOpenOrderRows() {
+  return queryWeeklyInputRows<DealerSkuOpenOrderRow>("ods_dealer_sku_open_order", `
     select
       id::text as id,
       customer,
-      sc_bu,
+      business_unit,
       dealer_type,
       material,
       dctp,
       open_qty::text as open_qty
-    from ${weeklyTableRef("ods_dealer_upn_open_order")}
+    from ${weeklyTableRef("ods_dealer_sku_open_order")}
     order by insert_dt desc nulls last, customer asc nulls last, material asc nulls last
     limit 10000
   `);
 }
 
-export async function listLoadedBscUpnInventoryRows() {
-  return queryWeeklyInputRows<BscUpnInventoryRow>("ods_bsc_upn_inventory", `
+export async function listLoadedCentralWarehouseSkuInventoryRows() {
+  return queryWeeklyInputRows<CentralWarehouseSkuInventoryRow>("ods_central_warehouse_sku_inventory", `
     select
       id::text as id,
       material,
       sloc,
       unrestricted_qty::text as unrestricted_qty
-    from ${weeklyTableRef("ods_bsc_upn_inventory")}
+    from ${weeklyTableRef("ods_central_warehouse_sku_inventory")}
     order by insert_dt desc nulls last, material asc, sloc asc nulls last
     limit 10000
   `);
 }
 
-export async function listLoadedBscUpnIntransitRows() {
-  return queryWeeklyInputRows<BscUpnIntransitRow>("ods_bsc_upn_intransit", `
+export async function listLoadedCentralWarehouseSkuIntransitRows() {
+  return queryWeeklyInputRows<CentralWarehouseSkuIntransitRow>("ods_central_warehouse_sku_intransit", `
     select
       id::text as id,
       material,
       to_char(forecast_date, 'YYYY-MM-DD') as forecast_date,
       intransit_qty::text as intransit_qty
-    from ${weeklyTableRef("ods_bsc_upn_intransit")}
+    from ${weeklyTableRef("ods_central_warehouse_sku_intransit")}
     order by forecast_date desc nulls last, insert_dt desc nulls last, material asc
     limit 10000
   `);
 }
 
-export async function listLoadedUpnSafetyStockRows() {
-  return queryWeeklyInputRows<UpnSafetyStockRow>("ods_upn_safety_stock_manual", `
+export async function listLoadedSkuSafetyStockRows() {
+  return queryWeeklyInputRows<SkuSafetyStockRow>("ods_sku_safety_stock_manual", `
     select
       id::text as id,
-      upn,
+      sku,
       safety_stock_qty::text as safety_stock_qty
-    from ${weeklyTableRef("ods_upn_safety_stock_manual")}
-    order by insert_dt desc nulls last, upn asc
+    from ${weeklyTableRef("ods_sku_safety_stock_manual")}
+    order by insert_dt desc nulls last, sku asc
     limit 10000
   `);
 }
 
-export async function listLoadedUpnConstraintRows() {
-  return queryWeeklyInputRows<UpnConstraintRow>("ods_upn_constraint_manual", `
+export async function listLoadedSkuConstraintRows() {
+  return queryWeeklyInputRows<SkuConstraintRow>("ods_sku_constraint_manual", `
     select
       id::text as id,
       to_char(period_month, 'YYYY-MM-DD') as period_month,
-      sc_bu,
-      upn,
+      business_unit,
+      sku,
       constraint_type,
       source_system
-    from ${weeklyTableRef("ods_upn_constraint_manual")}
-    order by period_month desc, sc_bu asc, upn asc, constraint_type asc
+    from ${weeklyTableRef("ods_sku_constraint_manual")}
+    order by period_month desc, business_unit asc, sku asc, constraint_type asc
     limit 10000
   `);
 }
 
-export async function listLoadedUpnBundleRows() {
-  return queryWeeklyInputRows<UpnBundleRow>("ods_upn_bundle_manual", `
+export async function listLoadedSkuBundleRows() {
+  return queryWeeklyInputRows<SkuBundleRow>("ods_sku_bundle_manual", `
     select
       id::text as id,
-      upn,
+      sku,
       bundle_qty::text as bundle_qty,
       source_system
-    from ${weeklyTableRef("ods_upn_bundle_manual")}
-    order by upn asc
+    from ${weeklyTableRef("ods_sku_bundle_manual")}
+    order by sku asc
     limit 10000
   `);
 }
 
-export async function listLoadedLpUpnPurchasePriceRows() {
-  return queryWeeklyInputRows<LpUpnPurchasePriceRow>("ods_lp_upn_purchase_price", `
+export async function listLoadedChannelSkuPurchasePriceRows() {
+  return queryWeeklyInputRows<ChannelSkuPurchasePriceRow>("ods_channel_sku_purchase_price", `
     select
       id::text as id,
       dealer_code,
       dealer_type,
-      upn,
-      bsc_std_sell_price::text as bsc_std_sell_price,
-      bsc_std_sell_price_vat::text as bsc_std_sell_price_vat,
+      sku,
+      central_warehouse_std_sell_price::text as central_warehouse_std_sell_price,
+      central_warehouse_std_sell_price_vat::text as central_warehouse_std_sell_price_vat,
       source_sell_price::text as source_sell_price,
       source_sell_price_vat::text as source_sell_price_vat,
       source_currency,
       usd_to_cny_rate::text as usd_to_cny_rate
-    from ${weeklyTableRef("ods_lp_upn_purchase_price")}
-    order by insert_dt desc nulls last, dealer_code asc, dealer_type asc, upn asc
+    from ${weeklyTableRef("ods_channel_sku_purchase_price")}
+    order by insert_dt desc nulls last, dealer_code asc, dealer_type asc, sku asc
     limit 10000
   `);
 }
@@ -265,7 +265,7 @@ export async function listLoadedLpUpnPurchasePriceRows() {
 export async function listLoadedCalendarPatternWeeklyRows() {
   return queryWeeklyInputRows<CalendarPatternWeeklyRow>("ods_calendar_pattern_weekly", `
     select
-      sc_bu,
+      business_unit,
       to_char(period_month, 'YYYY-MM-DD') as period_month,
       to_char(month_start_date, 'YYYY-MM-DD') as month_start_date,
       to_char(week_start_date, 'YYYY-MM-DD') as week_start_date,
@@ -273,7 +273,7 @@ export async function listLoadedCalendarPatternWeeklyRows() {
       prev_week_pattern_pct::text as prev_week_pattern_pct,
       current_week_pattern_pct::text as current_week_pattern_pct
     from ${weeklyTableRef("ods_calendar_pattern_weekly")}
-    order by week_start_date desc, sc_bu asc
+    order by week_start_date desc, business_unit asc
     limit 10000
   `);
 }
@@ -282,12 +282,12 @@ export async function listLoadedWeeklyAmountThresholdRows() {
   return queryWeeklyInputRows<WeeklyAmountThresholdRow>("ods_weekly_amount_threshold_manual", `
     select
       id::text as id,
-      sc_bu,
+      business_unit,
       overage_threshold_pct::text as overage_threshold_pct,
       shortfall_threshold_pct::text as shortfall_threshold_pct,
       source_system
     from ${weeklyTableRef("ods_weekly_amount_threshold_manual")}
-    order by sc_bu asc
+    order by business_unit asc
     limit 10000
   `);
 }
@@ -298,7 +298,7 @@ export async function listLoadedBuPatternAmountWeeklyRows() {
       id::text as id,
       to_char(period_week, 'YYYY-MM-DD') as period_week,
       to_char(period_month, 'YYYY-MM-DD') as period_month,
-      sc_bu,
+      business_unit,
       actual_amount::text as actual_amount,
       month_target_amount::text as month_target_amount,
       month_limit_amount::text as month_limit_amount,
@@ -308,7 +308,7 @@ export async function listLoadedBuPatternAmountWeeklyRows() {
       source_currency,
       usd_to_cny_rate::text as usd_to_cny_rate
     from ${weeklyTableRef("ods_bu_pattern_amount_weekly")}
-    order by period_week desc, sc_bu asc
+    order by period_week desc, business_unit asc
     limit 10000
   `);
 }

@@ -59,10 +59,10 @@ function inferFieldMapping(headers: (string | null)[]): string[] {
       return "allocate_qty";
     }
     if (value === "period_month" || (value.includes("period") && value.includes("month"))) return "period_month";
-    if (value.includes("parent") && value.includes("code")) return "parentdealerlpcode";
-    if (value.includes("parent") && value.includes("name")) return "parentdealerlpname";
-    if (value.includes("dealer") && value.includes("lp") && value.includes("code")) return "dealerlpcode";
-    if (value.includes("dealer") && value.includes("lp") && value.includes("name")) return "dealerlpname";
+    if (value.includes("parent") && value.includes("code")) return "parent_dealer_channel_code";
+    if (value.includes("parent") && value.includes("name")) return "parent_dealer_channel_name";
+    if (value.includes("dealer") && value.includes("channel") && value.includes("code")) return "dealer_channel_code";
+    if (value.includes("dealer") && value.includes("channel") && value.includes("name")) return "dealer_channel_name";
     if (value === "created_on" || (value.includes("created") && value.includes("on"))) return "created_on";
     if (
       value === "calendar_date" ||
@@ -82,14 +82,14 @@ function inferFieldMapping(headers: (string | null)[]): string[] {
     if (value === "sold_to_pt" || (value.includes("sold") && value.includes("pt"))) return "sold_to_pt";
     if (value === "customer" || value.includes("customer")) return "customer";
     if (value === "dealer_type" || value === "dealertype" || (value.includes("dealer") && value.includes("type"))) return "dealer_type";
-    if (value === "upn" || value.includes("upn code")) return "upn";
+    if (value === "sku" || value.includes("sku code")) return "sku";
     if (value === "material" || value.includes("material")) return "material";
     if (value === "dealer_code" || value === "dealercode" || value.includes("dealer code")) return "dealer_code";
     if (value === "sapid" || value.includes("sapid")) return "dealer_code";
-    if (value === "pl5" || value.includes("pl5 code") || value.includes("pl5_code")) return "pl5_code";
-    if (value.includes("pl5") && value.includes("name")) return "pl5_name";
-    if (value.includes("lp code") || value === "lp") return "dealerlpcode";
-    if (value.includes("lp name")) return "dealerlpname";
+    if (value === "category" || value.includes("category code") || value.includes("category_code")) return "category_code";
+    if (value.includes("category") && value.includes("name")) return "category_name";
+    if (value.includes("channel code") || value === "channel") return "dealer_channel_code";
+    if (value.includes("channel name")) return "dealer_channel_name";
     if (value === "dctp" || value.includes("order type") || value.includes("dctp")) return "dctp";
     if (value === "delivery_qty" || (value.includes("delivery") && value.includes("qty"))) return "delivery_qty";
     if (value === "open_qty" || (value.includes("open") && value.includes("qty"))) return "open_qty";
@@ -124,11 +124,11 @@ function inferFieldMapping(headers: (string | null)[]): string[] {
       return "safety_stock_qty";
     }
     if (value === "bundle_qty" || value.includes("套包数量")) return "bundle_qty";
-    if (value === "bsc_std_sell_price" || (value.includes("std") && value.includes("sell") && !value.includes("vat"))) {
-      return "bsc_std_sell_price";
+    if (value === "central_warehouse_std_sell_price" || (value.includes("std") && value.includes("sell") && !value.includes("vat"))) {
+      return "central_warehouse_std_sell_price";
     }
-    if (value === "bsc_std_sell_price_vat" || (value.includes("std") && value.includes("sell") && value.includes("vat"))) {
-      return "bsc_std_sell_price_vat";
+    if (value === "central_warehouse_std_sell_price_vat" || (value.includes("std") && value.includes("sell") && value.includes("vat"))) {
+      return "central_warehouse_std_sell_price_vat";
     }
     if (value === "prev_week_pattern_pct" || (value.includes("prev") && value.includes("pattern"))) {
       return "prev_week_pattern_pct";
@@ -141,7 +141,7 @@ function inferFieldMapping(headers: (string | null)[]): string[] {
     if (value === "month" || value.includes("月")) return "month";
     if (value.includes("dioh") && value.includes("day")) return "dioh_days";
     if (value.includes("abc")) return "abc_class";
-    if (value.includes("bu") || value.includes("sc_bu")) return "sc_bu";
+    if (value.includes("bu") || value.includes("business_unit")) return "business_unit";
     if (value.includes("source")) return "source_system";
 
     return value.replace(/[^a-z0-9_]/gi, "_").toLowerCase();

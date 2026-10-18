@@ -44,7 +44,7 @@ export default function CalcProcessPage() {
       <PageIntro
         title="计算公式与业务口径"
         description="完整展示月度补货规划和周度配货执行链路。公式与当前服务端实现保持一致，除数为 0、约束分支和套包取整均单独说明。"
-        breadcrumbs={[{ label: "统一计算", href: "/calc/upn-split" }, { label: "公式说明" }]}
+        breadcrumbs={[{ label: "统一计算", href: "/calc/sku-split" }, { label: "公式说明" }]}
       />
 
       <SectionCard

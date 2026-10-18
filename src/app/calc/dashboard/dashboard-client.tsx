@@ -24,9 +24,9 @@ interface OdsTrendData {
 }
 
 interface PipelineRow {
-  upn: string;
-  pl5Code: string;
-  dealerlpcode: string;
+  sku: string;
+  categoryCode: string;
+  dealer_channel_code: string;
   p: number;
   q: number;
   r: number;
@@ -34,9 +34,9 @@ interface PipelineRow {
 }
 
 interface WeeklyPipelineRow {
-  upn: string;
-  pl5Code: string;
-  lpCode: string;
+  sku: string;
+  categoryCode: string;
+  channelCode: string;
   ad: number;
   sa: number;
   ra: number;
@@ -46,18 +46,18 @@ interface WeeklyPipelineRow {
 interface ErrorData {
   errorRate: { total: number; errors: number; rate: number };
   distribution: { message: string; count: number }[];
-  anomalyUpns: {
-    dealerlpcode: string;
-    upn: string;
-    pl5_code: string;
+  anomalySkus: {
+    dealer_channel_code: string;
+    sku: string;
+    category_code: string;
     error_message: string;
     s_tolerance_replenish: number;
     t_adjusted_dioh: number;
   }[];
   diohWarnings: {
-    dealerlpcode: string;
-    upn: string;
-    pl5_code: string;
+    dealer_channel_code: string;
+    sku: string;
+    category_code: string;
     current_dioh: number;
     t_adjusted_dioh: number;
   }[];
@@ -151,10 +151,10 @@ const WEEKLY_PIPELINE_BAR_SERIES: BarChartSeries[] = [
 
 /* ---------- anomaly table columns ---------- */
 
-const ANOMALY_COLUMNS: Column<ErrorData["anomalyUpns"][number]>[] = [
-  { key: "dealerlpcode", header: "LP编码" },
-  { key: "upn", header: "SKU" },
-  { key: "pl5_code", header: "产品分类" },
+const ANOMALY_COLUMNS: Column<ErrorData["anomalySkus"][number]>[] = [
+  { key: "dealer_channel_code", header: "渠道编码" },
+  { key: "sku", header: "SKU" },
+  { key: "category_code", header: "产品分类" },
   { key: "error_message", header: "异常信息" },
   {
     key: "s_tolerance_replenish",
@@ -171,9 +171,9 @@ const ANOMALY_COLUMNS: Column<ErrorData["anomalyUpns"][number]>[] = [
 ];
 
 const 库存天数_COLUMNS: Column<ErrorData["diohWarnings"][number]>[] = [
-  { key: "dealerlpcode", header: "LP编码" },
-  { key: "pl5_code", header: "产品分类" },
-  { key: "upn", header: "SKU" },
+  { key: "dealer_channel_code", header: "渠道编码" },
+  { key: "category_code", header: "产品分类" },
+  { key: "sku", header: "SKU" },
   {
     key: "t_adjusted_dioh",
     header: "调整后库存天数",
@@ -197,7 +197,7 @@ export function DashboardClient({
   /* data state */
   const [t2Data, setT2Data] = useState<OdsTrendData | null>(null);
   const [invData, setInvData] = useState<OdsTrendData | null>(null);
-  const [fcstLpData, setFcstLpData] = useState<OdsTrendData | null>(null);
+  const [fcstChannelData, setFcstChannelData] = useState<OdsTrendData | null>(null);
   const [fcstT2Data, setFcstT2Data] = useState<OdsTrendData | null>(null);
   const [buData, setBuData] = useState<OdsTrendData | null>(null);
   const [allocData, setAllocData] = useState<OdsTrendData | null>(null);
@@ -208,8 +208,8 @@ export function DashboardClient({
   const [patternGap, setPatternGap] = useState<PatternGapData | null>(null);
   const [dnData, setDnData] = useState<OdsTrendData | null>(null);
   const [openOrderData, setOpenOrderData] = useState<{ data: { name: string; value: number }[] } | null>(null);
-  const [bscInvData, setBscInvData] = useState<{ data: { name: string; value: number }[] } | null>(null);
-  const [bscTransitData, setBscTransitData] = useState<OdsTrendData | null>(null);
+  const [centralWarehouseInvData, setCentralWarehouseInvData] = useState<{ data: { name: string; value: number }[] } | null>(null);
+  const [centralWarehouseTransitData, setCentralWarehouseTransitData] = useState<OdsTrendData | null>(null);
   const [safetyStockData, setSafetyStockData] = useState<{ data: { name: string; value: number }[] } | null>(null);
   const [priceData, setPriceData] = useState<{ data: { name: string; value: number }[] } | null>(null);
   const [calendarPatternData, setCalendarPatternData] = useState<OdsTrendData | null>(null);
@@ -227,15 +227,15 @@ export function DashboardClient({
       const results = await Promise.allSettled([
         safeFetch(`${base}/ods-trends?type=t2-purchase`),
         safeFetch(`${base}/ods-trends?type=inventory`),
-        safeFetch(`${base}/ods-trends?type=fcst-lp-pl5`),
-        safeFetch(`${base}/ods-trends?type=fcst-t2-pl5`),
+        safeFetch(`${base}/ods-trends?type=fcst-channel-category`),
+        safeFetch(`${base}/ods-trends?type=fcst-t2-category`),
         safeFetch(`${base}/ods-trends?type=bu-amount&time_span=${timeSpan}`),
         safeFetch(`${base}/ods-trends?type=allocation`),
         safeFetch(`${base}/summary`),
         safeFetch(`${base}/ods-trends?type=dealer-dn`),
         safeFetch(`${base}/ods-trends?type=dealer-open-order`),
-        safeFetch(`${base}/ods-trends?type=bsc-inventory`),
-        safeFetch(`${base}/ods-trends?type=bsc-intransit`),
+        safeFetch(`${base}/ods-trends?type=central-warehouse-inventory`),
+        safeFetch(`${base}/ods-trends?type=central-warehouse-intransit`),
         safeFetch(`${base}/ods-trends?type=safety-stock`),
         safeFetch(`${base}/ods-trends?type=purchase-price`),
         safeFetch(`${base}/ods-trends?type=calendar-pattern`),
@@ -254,19 +254,19 @@ export function DashboardClient({
         ),
       ]);
 
-      const [t2, inv, fcstLp, fcstT2, bu, alloc, sum, dn, openOrd, bscInv, bscTrans, sfStock, price, calPattern, pipe, err, weekly, gap] = results;
+      const [t2, inv, fcstChannel, fcstT2, bu, alloc, sum, dn, openOrd, centralWarehouseInv, centralWarehouseTrans, sfStock, price, calPattern, pipe, err, weekly, gap] = results;
 
       if (t2.status === "fulfilled") setT2Data(t2.value);
       if (inv.status === "fulfilled") setInvData(inv.value);
-      if (fcstLp.status === "fulfilled") setFcstLpData(fcstLp.value);
+      if (fcstChannel.status === "fulfilled") setFcstChannelData(fcstChannel.value);
       if (fcstT2.status === "fulfilled") setFcstT2Data(fcstT2.value);
       if (bu.status === "fulfilled") setBuData(bu.value);
       if (alloc.status === "fulfilled") setAllocData(alloc.value);
       if (sum.status === "fulfilled") setSummary(sum.value);
       if (dn.status === "fulfilled") setDnData(dn.value);
       if (openOrd.status === "fulfilled") setOpenOrderData(openOrd.value);
-      if (bscInv.status === "fulfilled") setBscInvData(bscInv.value);
-      if (bscTrans.status === "fulfilled") setBscTransitData(bscTrans.value);
+      if (centralWarehouseInv.status === "fulfilled") setCentralWarehouseInvData(centralWarehouseInv.value);
+      if (centralWarehouseTrans.status === "fulfilled") setCentralWarehouseTransitData(centralWarehouseTrans.value);
       if (sfStock.status === "fulfilled") setSafetyStockData(sfStock.value);
       if (price.status === "fulfilled") setPriceData(price.value);
       if (calPattern.status === "fulfilled") setCalendarPatternData(calPattern.value);
@@ -349,7 +349,7 @@ export function DashboardClient({
     !loading &&
     !t2Data &&
     !invData &&
-    !fcstLpData &&
+    !fcstChannelData &&
     !fcstT2Data &&
     !buData &&
     !allocData &&
@@ -361,7 +361,7 @@ export function DashboardClient({
       <PageIntro
         title="数据可视化图表"
         description="覆盖 ODS 趋势、补货管线对比、异常检测与周配货全链路可视化。"
-        breadcrumbs={[{ label: "计算", href: "/calc/upn-split" }, { label: "仪表板" }]}
+        breadcrumbs={[{ label: "计算", href: "/calc/sku-split" }, { label: "仪表板" }]}
       />
 
       {/* ---- filters ---- */}
@@ -450,11 +450,11 @@ export function DashboardClient({
               <ChartCard title="T2采购历史趋势" dim="产品分类" description="按月汇总采购量，Top 5" isLoading={loading} isEmpty={!t2Data}>
                 {buildLineData(t2Data) && <LineChart data={buildLineData(t2Data)!} xKey="period" series={buildLineSeries(t2Data)} height={280} />}
               </ChartCard>
-              <ChartCard title="库存变化趋势" dim="LP" description="按月汇总经销商库存量，Top 5" isLoading={loading} isEmpty={!invData}>
+              <ChartCard title="库存变化趋势" dim="渠道" description="按月汇总经销商库存量，Top 5" isLoading={loading} isEmpty={!invData}>
                 {buildLineData(invData) && <LineChart data={buildLineData(invData)!} xKey="period" series={buildLineSeries(invData)} height={280} />}
               </ChartCard>
-              <ChartCard title="LP-产品分类预测趋势" dim="产品分类" description="按月汇总预测数量，Top 5" isLoading={loading} isEmpty={!fcstLpData}>
-                {buildLineData(fcstLpData) && <LineChart data={buildLineData(fcstLpData)!} xKey="period" series={buildLineSeries(fcstLpData)} height={280} />}
+              <ChartCard title="渠道-产品分类预测趋势" dim="产品分类" description="按月汇总预测数量，Top 5" isLoading={loading} isEmpty={!fcstChannelData}>
+                {buildLineData(fcstChannelData) && <LineChart data={buildLineData(fcstChannelData)!} xKey="period" series={buildLineSeries(fcstChannelData)} height={280} />}
               </ChartCard>
               <ChartCard title="T2-产品分类预测趋势" dim="产品分类" description="按月汇总预测数量，Top 5" isLoading={loading} isEmpty={!fcstT2Data}>
                 {buildLineData(fcstT2Data) && <LineChart data={buildLineData(fcstT2Data)!} xKey="period" series={buildLineSeries(fcstT2Data)} height={280} />}
@@ -481,16 +481,16 @@ export function DashboardClient({
               <ChartCard title="经销商未清订单" dim="SKU" description="按SKU汇总未清订单量" isLoading={loading} isEmpty={!openOrderData || openOrderData.data.length === 0}>
                 {openOrderData && openOrderData.data.length > 0 && <BarChart data={openOrderData.data.map((d) => ({ name: d.name, value: d.value }))} xKey="name" series={[{ key: "value", name: "未清订单量" }]} />}
               </ChartCard>
-              <ChartCard title="BSC库存" dim="SKU" description="按SKU汇总BSC可用库存量" isLoading={loading} isEmpty={!bscInvData || bscInvData.data.length === 0}>
-                {bscInvData && bscInvData.data.length > 0 && <BarChart data={bscInvData.data.map((d) => ({ name: d.name, value: d.value }))} xKey="name" series={[{ key: "value", name: "库存量" }]} />}
+              <ChartCard title="中央仓库存" dim="SKU" description="按SKU汇总中央仓可用库存量" isLoading={loading} isEmpty={!centralWarehouseInvData || centralWarehouseInvData.data.length === 0}>
+                {centralWarehouseInvData && centralWarehouseInvData.data.length > 0 && <BarChart data={centralWarehouseInvData.data.map((d) => ({ name: d.name, value: d.value }))} xKey="name" series={[{ key: "value", name: "库存量" }]} />}
               </ChartCard>
-              <ChartCard title="BSC在途库存" dim="SKU" description="按日期汇总在途库存量，Top 5" isLoading={loading} isEmpty={!bscTransitData}>
-                {buildLineData(bscTransitData) && <LineChart data={buildLineData(bscTransitData)!} xKey="period" series={buildLineSeries(bscTransitData)} height={280} />}
+              <ChartCard title="中央仓在途库存" dim="SKU" description="按日期汇总在途库存量，Top 5" isLoading={loading} isEmpty={!centralWarehouseTransitData}>
+                {buildLineData(centralWarehouseTransitData) && <LineChart data={buildLineData(centralWarehouseTransitData)!} xKey="period" series={buildLineSeries(centralWarehouseTransitData)} height={280} />}
               </ChartCard>
               <ChartCard title="安全库存" dim="SKU" description="按SKU安全库存量" isLoading={loading} isEmpty={!safetyStockData || safetyStockData.data.length === 0}>
                 {safetyStockData && safetyStockData.data.length > 0 && <BarChart data={safetyStockData.data.map((d) => ({ name: d.name, value: d.value }))} xKey="name" series={[{ key: "value", name: "安全库存量" }]} />}
               </ChartCard>
-              <ChartCard title="LP-SKU单价" dim="SKU" description="按SKU标准售价" isLoading={loading} isEmpty={!priceData || priceData.data.length === 0}>
+              <ChartCard title="渠道-SKU单价" dim="SKU" description="按SKU标准售价" isLoading={loading} isEmpty={!priceData || priceData.data.length === 0}>
                 {priceData && priceData.data.length > 0 && <BarChart data={priceData.data.map((d) => ({ name: d.name, value: d.value }))} xKey="name" series={[{ key: "value", name: "单价" }]} />}
               </ChartCard>
             </div>
@@ -501,12 +501,12 @@ export function DashboardClient({
             <div className="space-y-6">
               <SectionCard title="月度补货管线" dim="产品" description="补货缺口、理论补货、基础补货与调剂补货的阶段数量对比，按最终调剂补货量降序">
                 {pipeline.length > 0 && (
-                  <BarChart data={pipeline.map((r) => ({ label: `${r.upn}\n${r.pl5Code}`, upn: r.upn, p: r.p, q: r.q, r: r.r, s: r.s }))} xKey="upn" series={PIPELINE_BAR_SERIES} height={350} minBarWidth={18} />
+                  <BarChart data={pipeline.map((r) => ({ label: `${r.sku}\n${r.categoryCode}`, sku: r.sku, p: r.p, q: r.q, r: r.r, s: r.s }))} xKey="sku" series={PIPELINE_BAR_SERIES} height={350} minBarWidth={18} />
                 )}
               </SectionCard>
               <SectionCard title="周配货管线" dim="产品" description="建议补货、缩减调整、金额补差与最终发货的阶段数量对比，按最终发货量降序">
                 {weeklyPipeline.length > 0 && (
-                  <BarChart data={weeklyPipeline.map((r) => ({ label: `${r.upn}\n${r.pl5Code}`, upn: r.upn, ad: r.ad, sa: r.sa, ra: r.ra, rra: r.rra }))} xKey="upn" series={WEEKLY_PIPELINE_BAR_SERIES} height={350} minBarWidth={18} />
+                  <BarChart data={weeklyPipeline.map((r) => ({ label: `${r.sku}\n${r.categoryCode}`, sku: r.sku, ad: r.ad, sa: r.sa, ra: r.ra, rra: r.rra }))} xKey="sku" series={WEEKLY_PIPELINE_BAR_SERIES} height={350} minBarWidth={18} />
                 )}
               </SectionCard>
               <SectionCard
@@ -549,12 +549,12 @@ export function DashboardClient({
               </div>
               {errors && errors.diohWarnings.length > 0 && (
                 <SectionCard title="库存天数 < 30 告警 SKU" description="当前库存天数不足30天的SKU">
-                  <DataTable title="库存天数告警SKU" data={errors.diohWarnings as unknown as Record<string, unknown>[]} columns={库存天数_COLUMNS as unknown as Column<Record<string, unknown>>[]} searchKey="upn" />
+                  <DataTable title="库存天数告警SKU" data={errors.diohWarnings as unknown as Record<string, unknown>[]} columns={库存天数_COLUMNS as unknown as Column<Record<string, unknown>>[]} searchKey="sku" />
                 </SectionCard>
               )}
-              {errors && errors.anomalyUpns.length > 0 && (
+              {errors && errors.anomalySkus.length > 0 && (
                 <SectionCard title="异常SKU明细" description="月度计算中被标记为异常的所有SKU行">
-                  <DataTable title="异常SKU明细" data={errors.anomalyUpns as unknown as Record<string, unknown>[]} columns={ANOMALY_COLUMNS as unknown as Column<Record<string, unknown>>[]} searchKey="upn" />
+                  <DataTable title="异常SKU明细" data={errors.anomalySkus as unknown as Record<string, unknown>[]} columns={ANOMALY_COLUMNS as unknown as Column<Record<string, unknown>>[]} searchKey="sku" />
                 </SectionCard>
               )}
             </div>

@@ -20,7 +20,7 @@ import { getWeeklyCalcBatchDetail } from "@/server/repositories";
 
 interface WeeklyStagePageProps {
   params: Promise<{ calendarDate: string; stage: string }>;
-  searchParams: Promise<{ bu?: string; lp?: string; pl5?: string; upn?: string }>;
+  searchParams: Promise<{ bu?: string; channel?: string; category?: string; sku?: string }>;
 }
 
 function serializeValue(value: unknown) {
@@ -55,7 +55,7 @@ export default async function WeeklyStagePage({ params, searchParams }: WeeklySt
   }
 
   const serializedRows = batch.results.map((row) => serializeRow(row as unknown as Record<string, unknown>));
-  const sourceByBu = new Map(batch.bu_summaries.map((summary) => [summary.sc_bu, {
+  const sourceByBu = new Map(batch.bu_summaries.map((summary) => [summary.business_unit, {
     current_week_pattern_pct: serializeValue(summary.current_week_pattern_pct),
     month_le_amount: serializeValue(summary.month_target_amount),
     actual_amount: serializeValue(summary.actual_amount),
@@ -72,21 +72,21 @@ export default async function WeeklyStagePage({ params, searchParams }: WeeklySt
     final_pattern_gap_amount: serializeValue(summary.final_pattern_gap_amount),
   } satisfies WeeklyFormulaBatchSource]));
   const tracedRows = batch.bu_summaries.flatMap((summary) => {
-    const rows = serializedRows.filter((row) => row.sc_bu === summary.sc_bu);
-    return buildWeeklyRowFormulaTraces(rows, sourceByBu.get(summary.sc_bu)!) as WeeklyStageTableRow[];
+    const rows = serializedRows.filter((row) => row.business_unit === summary.business_unit);
+    return buildWeeklyRowFormulaTraces(rows, sourceByBu.get(summary.business_unit)!) as WeeklyStageTableRow[];
   });
   const query = new URLSearchParams();
   if (filters.bu) query.set("bu", filters.bu);
-  if (filters.lp) query.set("lp", filters.lp);
-  if (filters.pl5) query.set("pl5", filters.pl5);
-  if (filters.upn) query.set("upn", filters.upn);
+  if (filters.channel) query.set("channel", filters.channel);
+  if (filters.category) query.set("category", filters.category);
+  if (filters.sku) query.set("sku", filters.sku);
   const batchMetrics = batch.bu_summaries.flatMap((summary) => {
-    const rows = serializedRows.filter((row) => row.sc_bu === summary.sc_bu);
-    const source = sourceByBu.get(summary.sc_bu)!;
+    const rows = serializedRows.filter((row) => row.business_unit === summary.business_unit);
+    const source = sourceByBu.get(summary.business_unit)!;
     return stage.batchMetrics
       .filter((code) => BATCH_TRACE_CODES.has(code))
       .map((code) => ({
-        scBu: summary.sc_bu,
+        businessUnit: summary.business_unit,
         trace: buildWeeklyBatchFormulaTrace(
           code as Parameters<typeof buildWeeklyBatchFormulaTrace>[0],
           rows,
@@ -120,11 +120,11 @@ export default async function WeeklyStagePage({ params, searchParams }: WeeklySt
       />
       {batchMetrics.length > 0 && stage.slug !== "final-adjustment" && (
         <div className="grid gap-4 border-y py-4 md:grid-cols-2 xl:grid-cols-4">
-          {batchMetrics.map(({ scBu, trace }) => (
+          {batchMetrics.map(({ businessUnit, trace }) => (
             <FormulaMetric
-              key={`${scBu}-${trace.code}`}
+              key={`${businessUnit}-${trace.code}`}
               trace={trace}
-              label={`${scBu} ${WEEKLY_FORMULA_REGISTRY[trace.code].name}`}
+              label={`${businessUnit} ${WEEKLY_FORMULA_REGISTRY[trace.code].name}`}
             />
           ))}
         </div>
@@ -136,7 +136,7 @@ export default async function WeeklyStagePage({ params, searchParams }: WeeklySt
           calendarDate={calendarDate}
           batchId={batch.id}
           buSummaries={batch.bu_summaries.map((summary) => ({
-            scBu: summary.sc_bu,
+            businessUnit: summary.business_unit,
             targetPendingAmount: serializeValue(summary.target_pending_amount),
             systemDefaultFinalAmountTotal: serializeValue(summary.system_default_final_amount_total),
             systemDefaultPatternGapAmount: serializeValue(summary.system_default_pattern_gap_amount),

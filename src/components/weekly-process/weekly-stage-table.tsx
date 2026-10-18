@@ -12,10 +12,10 @@ import {
 
 export interface WeeklyStageTableRow extends Record<string, unknown> {
   id: string;
-  sc_bu: string;
-  lp_code: string;
-  pl5_code: string;
-  upn: string;
+  business_unit: string;
+  channel_code: string;
+  category_code: string;
+  sku: string;
   traces: Record<WeeklyFormulaCode, FormulaTrace>;
 }
 
@@ -24,7 +24,7 @@ interface WeeklyStageTableProps {
   title: string;
   fields: WeeklyFormulaCode[];
   rows: WeeklyStageTableRow[];
-  initialFilters: { bu?: string; lp?: string; pl5?: string; upn?: string };
+  initialFilters: { bu?: string; channel?: string; category?: string; sku?: string };
 }
 
 export function WeeklyStageTable({
@@ -36,15 +36,15 @@ export function WeeklyStageTable({
 }: WeeklyStageTableProps) {
   const columns = useMemo<Column<WeeklyStageTableRow>[]>(
     () => [
-      { key: "sc_bu", header: "业务单元" },
+      { key: "business_unit", header: "业务单元" },
       {
-        key: "lp_code",
-        header: "LP",
+        key: "channel_code",
+        header: "渠道",
         className: "sticky left-0 z-10 bg-background",
         headerDetailClassName: "sticky left-0 z-10 bg-muted/20",
       },
-      { key: "pl5_code", header: "产品分类" },
-      { key: "upn", header: "SKU" },
+      { key: "category_code", header: "产品分类" },
+      { key: "sku", header: "SKU" },
       ...fields.map((code) => ({
         key: code,
         header: `${WEEKLY_FORMULA_REGISTRY[code].name} (${code})`,
@@ -62,10 +62,10 @@ export function WeeklyStageTable({
       columns={columns}
       data={rows}
       dimensionFilters={{
-        keys: { bu: "sc_bu", lp: "lp_code", pl5: "pl5_code", upn: "upn" },
+        keys: { bu: "business_unit", channel: "channel_code", category: "category_code", sku: "sku" },
         initialValues: initialFilters,
       }}
-      exportTable="calc_weekly_upn_split_result"
+      exportTable="calc_weekly_sku_split_result"
       exportParams={{ calendar_date: calendarDate }}
     />
   );

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const periodMonth = searchParams.get("period_month");
     const calendarDate = searchParams.get("calendar_date");
 
-    const rows = await prisma.calc_weekly_upn_split_batch.findMany({
+    const rows = await prisma.calc_weekly_sku_split_batch.findMany({
       where: {
         status: { in: ["SUCCESS", "PARTIAL"] },
         ...(periodMonth

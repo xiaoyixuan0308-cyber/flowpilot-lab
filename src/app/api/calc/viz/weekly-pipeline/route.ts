@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     let targetId: string | null = batchId ?? null;
 
     if (!targetId && calendarDate) {
-      const batches = await prisma.calc_weekly_upn_split_batch.findMany({
+      const batches = await prisma.calc_weekly_sku_split_batch.findMany({
         where: {
           calendar_date: new Date(`${calendarDate}T08:00:00+08:00`),
           status: { in: ["SUCCESS", "PARTIAL"] },
@@ -28,12 +28,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ data: [], buSummaries: [] });
     }
 
-    const results = await prisma.calc_weekly_upn_split_result.findMany({
+    const results = await prisma.calc_weekly_sku_split_result.findMany({
         where: { batch_id: targetId },
         select: {
-          pl5_code: true,
-          upn: true,
-          lp_code: true,
+          category_code: true,
+          sku: true,
+          channel_code: true,
           suggest_qty: true,
           system_adjusted_suggest_qty: true,
           gap_fill_qty: true,
@@ -43,9 +43,9 @@ export async function GET(request: NextRequest) {
       });
 
     const data = results.map((row) => ({
-      upn: row.upn,
-      pl5Code: row.pl5_code || "unknown",
-      lpCode: row.lp_code || "unknown",
+      sku: row.sku,
+      categoryCode: row.category_code || "unknown",
+      channelCode: row.channel_code || "unknown",
       ad: Math.round(Number(row.suggest_qty ?? 0) * 100) / 100,
       sa: Math.round(Number(row.system_adjusted_suggest_qty ?? 0) * 100) / 100,
       ra: Math.round(Number(row.gap_fill_qty ?? 0) * 100) / 100,

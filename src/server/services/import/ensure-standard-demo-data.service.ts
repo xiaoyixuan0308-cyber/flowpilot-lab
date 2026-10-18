@@ -13,22 +13,22 @@ let ensurePromise: Promise<void> | null = null;
 async function isDemoReady() {
   const counts = await Promise.all([
     prisma.ods_t2_purchase_monthly.count(),
-    prisma.ods_inventory_dealer_upn.count(),
-    prisma.ods_dioh_dealer_upn.count(),
-    prisma.ods_fcst_lp_pl5_monthly.count(),
-    prisma.ods_fcst_t2_pl5_monthly.count(),
-    prisma.ods_dealer_upn_dn.count(),
-    prisma.ods_dealer_upn_open_order.count(),
-    prisma.ods_bsc_upn_inventory.count(),
-    prisma.ods_bsc_upn_intransit.count(),
-    prisma.ods_upn_safety_stock_manual.count(),
-    prisma.ods_lp_upn_purchase_price.count(),
-    prisma.ods_upn_bundle_manual.count(),
+    prisma.ods_inventory_dealer_sku.count(),
+    prisma.ods_dioh_dealer_sku.count(),
+    prisma.ods_fcst_channel_category_monthly.count(),
+    prisma.ods_fcst_t2_category_monthly.count(),
+    prisma.ods_dealer_sku_dn.count(),
+    prisma.ods_dealer_sku_open_order.count(),
+    prisma.ods_central_warehouse_sku_inventory.count(),
+    prisma.ods_central_warehouse_sku_intransit.count(),
+    prisma.ods_sku_safety_stock_manual.count(),
+    prisma.ods_channel_sku_purchase_price.count(),
+    prisma.ods_sku_bundle_manual.count(),
     prisma.ods_weekly_amount_threshold_manual.count(),
     prisma.ods_calendar_pattern_weekly.count(),
     prisma.ods_bu_pattern_amount_weekly.count(),
-    prisma.calc_upn_split_result.count(),
-    prisma.calc_weekly_upn_split_result.count(),
+    prisma.calc_sku_split_result.count(),
+    prisma.calc_weekly_sku_split_result.count(),
   ]);
   return counts.every((count) => count > 0) && counts[0] >= 100;
 }
@@ -54,27 +54,27 @@ async function loadDemoWorkbook() {
 async function fillSupportingDemoTables() {
   const periodMonth = new Date("2026-07-01T00:00:00.000Z");
   const [forecasts, productScopes] = await Promise.all([
-    prisma.ods_fcst_lp_pl5_monthly.findMany({
+    prisma.ods_fcst_channel_category_monthly.findMany({
       where: { year: "2026", month: { in: ["7", "07"] } },
       select: {
-        dealerlpcode: true, dealerlpname: true, pl5_code: true, pl5_name: true,
+        dealer_channel_code: true, dealer_channel_name: true, category_code: true, category_name: true,
         fcst_qty: true,
       },
     }),
-    prisma.bridge_pl5_upn_scope_monthly.findMany({
+    prisma.bridge_category_sku_scope_monthly.findMany({
       where: { period_month: periodMonth },
-      select: { pl5_code: true, pl5_name: true, upn: true },
+      select: { category_code: true, category_name: true, sku: true },
     }),
   ]);
 
-  if ((await prisma.ods_lp_pl5_allocate_monthly.count()) === 0 && forecasts.length > 0) {
-    await prisma.ods_lp_pl5_allocate_monthly.createMany({
+  if ((await prisma.ods_channel_category_allocate_monthly.count()) === 0 && forecasts.length > 0) {
+    await prisma.ods_channel_category_allocate_monthly.createMany({
       data: forecasts.map((row) => ({
         period_month: periodMonth,
-        dealerlpcode: row.dealerlpcode,
-        dealerlpname: row.dealerlpname,
-        pl5_code: row.pl5_code,
-        pl5_name: row.pl5_name,
+        dealer_channel_code: row.dealer_channel_code,
+        dealer_channel_name: row.dealer_channel_name,
+        category_code: row.category_code,
+        category_name: row.category_name,
         allocate_qty: row.fcst_qty,
         source_system: `DEMO_${STANDARD_DEMO_VERSION}`,
       })),
@@ -82,21 +82,21 @@ async function fillSupportingDemoTables() {
     });
   }
 
-  if ((await prisma.ods_upn_active_list.count()) === 0 && forecasts.length > 0 && productScopes.length > 0) {
+  if ((await prisma.ods_sku_active_list.count()) === 0 && forecasts.length > 0 && productScopes.length > 0) {
     const productsByCategory = new Map<string, typeof productScopes>();
     for (const product of productScopes) {
-      const list = productsByCategory.get(product.pl5_code) ?? [];
+      const list = productsByCategory.get(product.category_code) ?? [];
       list.push(product);
-      productsByCategory.set(product.pl5_code, list);
+      productsByCategory.set(product.category_code, list);
     }
-    await prisma.ods_upn_active_list.createMany({
+    await prisma.ods_sku_active_list.createMany({
       data: forecasts.flatMap((channel) =>
-        (productsByCategory.get(channel.pl5_code) ?? []).map((product) => ({
-          dealerlpcode: channel.dealerlpcode,
-          dealerlpname: channel.dealerlpname,
-          pl5_code: product.pl5_code,
-          pl5_name: product.pl5_name,
-          upn: product.upn,
+        (productsByCategory.get(channel.category_code) ?? []).map((product) => ({
+          dealer_channel_code: channel.dealer_channel_code,
+          dealer_channel_name: channel.dealer_channel_name,
+          category_code: product.category_code,
+          category_name: product.category_name,
+          sku: product.sku,
           year: "2026",
           month: "7",
           source_system: `DEMO_${STANDARD_DEMO_VERSION}`,

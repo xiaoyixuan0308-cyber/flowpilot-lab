@@ -9,20 +9,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export type WeeklyAmountThresholdManagerRow = Record<string, unknown> & {
-  sc_bu: string;
+  business_unit: string;
   overage_threshold_pct: string;
   shortfall_threshold_pct: string;
   source_system: string;
 };
 
 type FormState = {
-  scBu: string;
+  businessUnit: string;
   overageThresholdPct: string;
   shortfallThresholdPct: string;
 };
 
 const EMPTY_FORM: FormState = {
-  scBu: "",
+  businessUnit: "",
   overageThresholdPct: "5",
   shortfallThresholdPct: "5",
 };
@@ -46,7 +46,7 @@ export function WeeklyAmountThresholdManager({
 
   function editRow(row: WeeklyAmountThresholdManagerRow) {
     setForm({
-      scBu: row.sc_bu,
+      businessUnit: row.business_unit,
       overageThresholdPct: row.overage_threshold_pct,
       shortfallThresholdPct: row.shortfall_threshold_pct,
     });
@@ -67,7 +67,7 @@ export function WeeklyAmountThresholdManager({
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "阈值保存失败");
       setForm({
-        scBu: payload.rule.scBu,
+        businessUnit: payload.rule.businessUnit,
         overageThresholdPct: String(payload.rule.overageThresholdPct),
         shortfallThresholdPct: String(payload.rule.shortfallThresholdPct),
       });
@@ -82,19 +82,19 @@ export function WeeklyAmountThresholdManager({
   }
 
   async function deleteRule(row: WeeklyAmountThresholdManagerRow) {
-    setPendingAction(`delete:${row.sc_bu}`);
+    setPendingAction(`delete:${row.business_unit}`);
     setMessage("");
     setIsError(false);
     try {
       const response = await fetch("/api/settings/weekly-amount-threshold", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scBu: row.sc_bu }),
+        body: JSON.stringify({ businessUnit: row.business_unit }),
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "阈值删除失败");
-      if (form.scBu === row.sc_bu) resetForm();
-      setMessage(`${row.sc_bu} 已恢复默认 5%/5%。`);
+      if (form.businessUnit === row.business_unit) resetForm();
+      setMessage(`${row.business_unit} 已恢复默认 5%/5%。`);
       router.refresh();
     } catch (error) {
       setIsError(true);
@@ -105,7 +105,7 @@ export function WeeklyAmountThresholdManager({
   }
 
   const columns: Column<WeeklyAmountThresholdManagerRow>[] = [
-    { key: "sc_bu", header: "业务单元" },
+    { key: "business_unit", header: "业务单元" },
     { key: "overage_threshold_pct", header: "超额缩减阈值(%)" },
     { key: "shortfall_threshold_pct", header: "缺口补差阈值(%)" },
     {
@@ -126,7 +126,7 @@ export function WeeklyAmountThresholdManager({
             onClick={() => deleteRule(row)}
           >
             <Trash2 />
-            {pendingAction === `delete:${row.sc_bu}` ? "删除中" : "删除"}
+            {pendingAction === `delete:${row.business_unit}` ? "删除中" : "删除"}
           </Button>
         </div>
       ),
@@ -141,8 +141,8 @@ export function WeeklyAmountThresholdManager({
             业务单元
             <Input
               className="mt-1"
-              value={form.scBu}
-              onChange={(event) => setForm((current) => ({ ...current, scBu: event.target.value }))}
+              value={form.businessUnit}
+              onChange={(event) => setForm((current) => ({ ...current, businessUnit: event.target.value }))}
             />
           </label>
           <label className="text-sm font-medium">
@@ -191,7 +191,7 @@ export function WeeklyAmountThresholdManager({
         title="阈值明细"
         columns={columns}
         data={rows}
-        searchKey="sc_bu"
+        searchKey="business_unit"
         searchPlaceholder="搜索业务单元..."
         exportTable="ods_weekly_amount_threshold_manual"
         exportParams={{}}

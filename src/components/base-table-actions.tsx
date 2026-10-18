@@ -24,7 +24,7 @@ interface ImportFeedback {
 }
 
 const DUPLICATE_BU_PATTERN_ERROR =
-  /duplicate key detected: period_week=([^,;]+), sc_bu=([^;]+); Excel rows (\d+) and (\d+)/i;
+  /duplicate key detected: period_week=([^,;]+), business_unit=([^;]+); Excel rows (\d+) and (\d+)/i;
 
 function buildDefaultErrorFeedback(message: string): ImportFeedback {
   return {
@@ -37,13 +37,13 @@ function buildBuPatternDuplicateFeedback(message: string): ImportFeedback | null
   const matched = message.match(DUPLICATE_BU_PATTERN_ERROR);
   if (!matched) return null;
 
-  const [, periodWeek, scBu, firstRow, secondRow] = matched;
+  const [, periodWeek, businessUnit, firstRow, secondRow] = matched;
 
   return {
     tone: "warning",
     lines: [
       "业务单元周/月预算存在重复键，当前无法导入。",
-      `同一周次与业务单元只能保留 1 条记录：${periodWeek} / ${scBu}`,
+      `同一周次与业务单元只能保留 1 条记录：${periodWeek} / ${businessUnit}`,
       `请检查 Excel 第 ${firstRow} 行和第 ${secondRow} 行，合并为该周该业务单元唯一的预算输入。`,
     ],
   };

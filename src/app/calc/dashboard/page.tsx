@@ -12,12 +12,12 @@ export default async function DashboardPage() {
         id: true,
         period_month: true,
         status: true,
-        total_upns: true,
-        error_upns: true,
+        total_skus: true,
+        error_skus: true,
         calculated_at: true,
       },
     }),
-    prisma.calc_weekly_upn_split_batch.findMany({
+    prisma.calc_weekly_sku_split_batch.findMany({
       orderBy: { calculated_at: "desc" },
       take: 30,
       select: {
@@ -25,7 +25,7 @@ export default async function DashboardPage() {
         period_month: true,
         calendar_date: true,
         status: true,
-        total_upns: true,
+        total_skus: true,
         calculated_at: true,
       },
     }),

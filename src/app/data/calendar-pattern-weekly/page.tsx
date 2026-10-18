@@ -4,7 +4,7 @@ import { DataPageLayout } from "@/components/data-page-layout";
 import { listLoadedCalendarPatternWeeklyRows } from "@/server/repositories";
 
 type Row = {
-  sc_bu: string;
+  business_unit: string;
   period_month: string;
   month_start_date: string;
   week_start_date: string;
@@ -14,7 +14,7 @@ type Row = {
 };
 
 const columns: Column<Row>[] = [
-  { key: "sc_bu", header: "业务单元" },
+  { key: "business_unit", header: "业务单元" },
   { key: "period_month", header: "归属月份" },
   { key: "month_start_date", header: "业务月开始日" },
   { key: "week_start_date", header: "周开始日" },
@@ -26,7 +26,7 @@ const columns: Column<Row>[] = [
 export default async function CalendarPatternWeeklyPage() {
   const rows = await listLoadedCalendarPatternWeeklyRows();
   const data: Row[] = rows.map((row) => ({
-    sc_bu: row.sc_bu,
+    business_unit: row.business_unit,
     period_month: row.period_month,
     month_start_date: row.month_start_date,
     week_start_date: row.week_start_date,
@@ -53,7 +53,7 @@ export default async function CalendarPatternWeeklyPage() {
         title: "周历与周配比明细",
         columns,
         data,
-        searchKey: "sc_bu",
+        searchKey: "business_unit",
         searchPlaceholder: "搜索业务单元...",
         filters: [{ key: "period_month", label: "月份", placeholder: "全部月份", sort: "desc" }],
         exportTable: "ods_calendar_pattern_weekly",

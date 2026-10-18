@@ -1,8 +1,8 @@
 import { config } from "dotenv";
 
-export const BSC_ENV_PATHS = [".env.local", ".env"];
+export const CENTRAL_WAREHOUSE_ENV_PATHS = [".env.local", ".env"];
 
 config({
-  path: BSC_ENV_PATHS,
+  path: CENTRAL_WAREHOUSE_ENV_PATHS,
   override: false,
 });

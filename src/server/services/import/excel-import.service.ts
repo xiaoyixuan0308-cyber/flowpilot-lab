@@ -26,12 +26,12 @@ interface PreparedSheetImport extends SheetImportTarget {
 }
 
 const EMPTY_SNAPSHOT_TABLES: ImportSheetTable[] = [
-  "dealerUpnDn",
-  "dealerUpnOpenOrder",
-  "bscUpnIntransit",
-  "upnSafetyStock",
-  "upnConstraint",
-  "upnBundle",
+  "dealerSkuDn",
+  "dealerSkuOpenOrder",
+  "centralWarehouseSkuIntransit",
+  "skuSafetyStock",
+  "skuConstraint",
+  "skuBundle",
   "weeklyAmountThreshold",
 ];
 
@@ -123,7 +123,7 @@ export async function importExcelFile(
     await prisma.$transaction(
       async (tx) => {
         const needsCurrencyConversion = preparedSheets.some((item) =>
-          ["lpUpnPurchasePrice", "buPatternAmountWeekly"].includes(item.config.table),
+          ["channelSkuPurchasePrice", "buPatternAmountWeekly"].includes(item.config.table),
         );
         const exchangeRate = needsCurrencyConversion ? await getCurrentUsdToCnyRate(tx) : null;
         for (const table of missingSparseSnapshots) {

@@ -1,61 +1,61 @@
 import type {
-  ActiveUpnRow,
+  ActiveSkuRow,
   DiohRow,
-  FcstLpPl5Row,
-  FcstT2Pl5Row,
+  FcstChannelCategoryRow,
+  FcstT2CategoryRow,
   InventoryRow,
   T2PurchaseRow,
-} from "@/server/services/calc/monthly-upn-split/upn-split.types";
-import type { UpnSplitErrorCode } from "@/server/constants/upn-split-error-catalog";
+} from "@/server/services/calc/monthly-sku-split/sku-split.types";
+import type { SkuSplitErrorCode } from "@/server/constants/sku-split-error-catalog";
 
-export interface LpPl5ScopeRow {
+export interface ChannelCategoryScopeRow {
   periodMonth: string;
-  scBu: string;
-  lpCode: string;
-  lpName: string | null;
-  pl5Code: string;
-  pl5Name: string | null;
+  businessUnit: string;
+  channelCode: string;
+  channelName: string | null;
+  categoryCode: string;
+  categoryName: string | null;
   scopeSource: string;
 }
 
-export interface LpPl5StatusRow {
+export interface ChannelCategoryStatusRow {
   periodMonth: string;
-  scBu: string;
-  lpCode: string;
-  lpName: string | null;
-  pl5Code: string;
-  pl5Name: string | null;
+  businessUnit: string;
+  channelCode: string;
+  channelName: string | null;
+  categoryCode: string;
+  categoryName: string | null;
   hasQuota: boolean;
   hasHistory: boolean;
   quotaQty: number | null;
   historyQtyM6M1: number | null;
   statusNote: string | null;
-  errorCode: UpnSplitErrorCode | null;
+  errorCode: SkuSplitErrorCode | null;
 }
 
-export interface Pl5UpnScopeRow {
+export interface CategorySkuScopeRow {
   periodMonth: string;
-  scBu: string;
-  pl5Code: string;
-  pl5Name: string | null;
-  upn: string;
-  upnSource: string;
+  businessUnit: string;
+  categoryCode: string;
+  categoryName: string | null;
+  sku: string;
+  skuSource: string;
 }
 
-export interface LpPl5UpnStatusRow {
+export interface ChannelCategorySkuStatusRow {
   periodMonth: string;
-  scBu: string;
-  lpCode: string;
-  lpName: string | null;
-  pl5Code: string;
-  pl5Name: string | null;
-  upn: string;
+  businessUnit: string;
+  channelCode: string;
+  channelName: string | null;
+  categoryCode: string;
+  categoryName: string | null;
+  sku: string;
   hasQuota: boolean;
   hasHistory: boolean;
   quotaQty: number | null;
   historyQtyM6M1: number | null;
   statusNote: string | null;
-  errorCode: UpnSplitErrorCode | null;
+  errorCode: SkuSplitErrorCode | null;
 }
 
 export interface ScopeSourceData {
@@ -63,14 +63,14 @@ export interface ScopeSourceData {
   t2Purchases: T2PurchaseRow[];
   inventories: InventoryRow[];
   diohTargets: DiohRow[];
-  fcstLpPl5: FcstLpPl5Row[];
-  fcstT2Pl5: FcstT2Pl5Row[];
-  activeUpns: ActiveUpnRow[];
+  fcstChannelCategory: FcstChannelCategoryRow[];
+  fcstT2Category: FcstT2CategoryRow[];
+  activeSkus: ActiveSkuRow[];
 }
 
 export interface ScopeArtifacts {
-  lpPl5ScopeRows: LpPl5ScopeRow[];
-  lpPl5StatusRows: LpPl5StatusRow[];
-  pl5UpnScopeRows: Pl5UpnScopeRow[];
-  lpPl5UpnStatusRows: LpPl5UpnStatusRow[];
+  channelCategoryScopeRows: ChannelCategoryScopeRow[];
+  channelCategoryStatusRows: ChannelCategoryStatusRow[];
+  categorySkuScopeRows: CategorySkuScopeRow[];
+  channelCategorySkuStatusRows: ChannelCategorySkuStatusRow[];
 }

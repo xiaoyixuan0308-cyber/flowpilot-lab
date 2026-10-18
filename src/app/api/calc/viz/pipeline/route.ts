@@ -29,12 +29,12 @@ export async function GET(request: NextRequest) {
 
     const batchId = batches[0].id;
 
-    const results = await prisma.calc_upn_split_result.findMany({
+    const results = await prisma.calc_sku_split_result.findMany({
       where: { batch_id: batchId },
       select: {
-        pl5_code: true,
-        upn: true,
-        dealerlpcode: true,
+        category_code: true,
+        sku: true,
+        dealer_channel_code: true,
         p_theoretical_replenish: true,
         q_actual_theoretical: true,
         r_base_replenish: true,
@@ -44,9 +44,9 @@ export async function GET(request: NextRequest) {
     });
 
     const data = results.map((row) => ({
-      upn: row.upn,
-      pl5Code: row.pl5_code || "unknown",
-      dealerlpcode: row.dealerlpcode,
+      sku: row.sku,
+      categoryCode: row.category_code || "unknown",
+      dealer_channel_code: row.dealer_channel_code,
       p: Math.round(Number(row.p_theoretical_replenish ?? 0) * 100) / 100,
       q: Math.round(Number(row.q_actual_theoretical ?? 0) * 100) / 100,
       r: Math.round(Number(row.r_base_replenish ?? 0) * 100) / 100,

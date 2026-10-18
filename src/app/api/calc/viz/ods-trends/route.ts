@@ -4,14 +4,14 @@ import { prisma } from "@/lib/prisma";
 type TrendType =
   | "t2-purchase"
   | "inventory"
-  | "fcst-lp-pl5"
-  | "fcst-t2-pl5"
+  | "fcst-channel-category"
+  | "fcst-t2-category"
   | "bu-amount"
   | "allocation"
   | "dealer-dn"
   | "dealer-open-order"
-  | "bsc-inventory"
-  | "bsc-intransit"
+  | "central-warehouse-inventory"
+  | "central-warehouse-intransit"
   | "safety-stock"
   | "purchase-price"
   | "calendar-pattern";
@@ -20,9 +20,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type") as TrendType | null;
-    const scBu = searchParams.get("sc_bu");
-    const pl5Code = searchParams.get("pl5_code");
-    const dealerlpcode = searchParams.get("dealerlpcode");
+    const businessUnit = searchParams.get("business_unit");
+    const categoryCode = searchParams.get("category_code");
+    const dealer_channel_code = searchParams.get("dealer_channel_code");
 
     if (!type) {
       return NextResponse.json(
@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
       case "t2-purchase": {
         const rows = await prisma.ods_t2_purchase_monthly.findMany({
           where: {
-            ...(scBu ? { sc_bu: scBu } : {}),
-            ...(pl5Code ? { pl5_code: pl5Code } : {}),
+            ...(businessUnit ? { business_unit: businessUnit } : {}),
+            ...(categoryCode ? { category_code: categoryCode } : {}),
           },
           orderBy: [{ year: "asc" }, { month: "asc" }],
           take: 5000,
@@ -48,8 +48,8 @@ export async function GET(request: NextRequest) {
         for (const row of rows) {
           const period = `${row.year}-${row.month.padStart(2, "0")}`;
           periods.add(period);
-          const key = row.pl5_code || "unknown";
-          seriesLabels.set(key, row.pl5_name || key);
+          const key = row.category_code || "unknown";
+          seriesLabels.set(key, row.category_name || key);
           if (!seriesMap.has(key)) seriesMap.set(key, new Map());
           seriesMap.get(key)!.set(
             period,
@@ -67,9 +67,9 @@ export async function GET(request: NextRequest) {
       }
 
       case "inventory": {
-        const rows = await prisma.ods_inventory_dealer_upn.findMany({
+        const rows = await prisma.ods_inventory_dealer_sku.findMany({
           where: {
-            ...(dealerlpcode ? { dealerlpcode } : {}),
+            ...(dealer_channel_code ? { dealer_channel_code } : {}),
           },
           orderBy: [{ year: "asc" }, { month: "asc" }],
           take: 5000,
@@ -81,8 +81,8 @@ export async function GET(request: NextRequest) {
         for (const row of rows) {
           const period = `${row.year}-${row.month.padStart(2, "0")}`;
           periods.add(period);
-          const key = dealerlpcode ? row.upn : row.dealerlpcode || "unknown";
-          seriesLabels.set(key, dealerlpcode ? row.upn : row.dealerlpname || key);
+          const key = dealer_channel_code ? row.sku : row.dealer_channel_code || "unknown";
+          seriesLabels.set(key, dealer_channel_code ? row.sku : row.dealer_channel_name || key);
           if (!seriesMap.has(key)) seriesMap.set(key, new Map());
           seriesMap.get(key)!.set(
             period,
@@ -99,11 +99,11 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ periods: sortedPeriods, series, seriesLabels: Object.fromEntries(seriesLabels) });
       }
 
-      case "fcst-lp-pl5": {
-        const rows = await prisma.ods_fcst_lp_pl5_monthly.findMany({
+      case "fcst-channel-category": {
+        const rows = await prisma.ods_fcst_channel_category_monthly.findMany({
           where: {
-            ...(scBu ? { sc_bu: scBu } : {}),
-            ...(pl5Code ? { pl5_code: pl5Code } : {}),
+            ...(businessUnit ? { business_unit: businessUnit } : {}),
+            ...(categoryCode ? { category_code: categoryCode } : {}),
           },
           orderBy: [{ year: "asc" }, { month: "asc" }],
           take: 5000,
@@ -115,8 +115,8 @@ export async function GET(request: NextRequest) {
         for (const row of rows) {
           const period = `${row.year}-${row.month.padStart(2, "0")}`;
           periods.add(period);
-          const key = row.pl5_code || "unknown";
-          seriesLabels.set(key, row.pl5_name || key);
+          const key = row.category_code || "unknown";
+          seriesLabels.set(key, row.category_name || key);
           if (!seriesMap.has(key)) seriesMap.set(key, new Map());
           seriesMap.get(key)!.set(
             period,
@@ -133,11 +133,11 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ periods: sortedPeriods, series, seriesLabels: Object.fromEntries(seriesLabels) });
       }
 
-      case "fcst-t2-pl5": {
-        const rows = await prisma.ods_fcst_t2_pl5_monthly.findMany({
+      case "fcst-t2-category": {
+        const rows = await prisma.ods_fcst_t2_category_monthly.findMany({
           where: {
-            ...(scBu ? { sc_bu: scBu } : {}),
-            ...(pl5Code ? { pl5_code: pl5Code } : {}),
+            ...(businessUnit ? { business_unit: businessUnit } : {}),
+            ...(categoryCode ? { category_code: categoryCode } : {}),
           },
           orderBy: [{ year: "asc" }, { month: "asc" }],
           take: 5000,
@@ -149,8 +149,8 @@ export async function GET(request: NextRequest) {
         for (const row of rows) {
           const period = `${row.year}-${row.month.padStart(2, "0")}`;
           periods.add(period);
-          const key = row.pl5_code || "unknown";
-          seriesLabels.set(key, row.pl5_name || key);
+          const key = row.category_code || "unknown";
+          seriesLabels.set(key, row.category_name || key);
           if (!seriesMap.has(key)) seriesMap.set(key, new Map());
           seriesMap.get(key)!.set(
             period,
@@ -171,7 +171,7 @@ export async function GET(request: NextRequest) {
         const timeSpan = searchParams.get("time_span") === "month" ? "month" : "week";
         const rows = await prisma.ods_bu_pattern_amount_weekly.findMany({
           where: {
-            ...(scBu ? { sc_bu: scBu } : {}),
+            ...(businessUnit ? { business_unit: businessUnit } : {}),
           },
           orderBy: { period_week: "asc" },
           take: 2000,
@@ -208,7 +208,7 @@ export async function GET(request: NextRequest) {
       }
 
       case "allocation": {
-        const rows = await prisma.ods_lp_pl5_allocate_monthly.findMany({
+        const rows = await prisma.ods_channel_category_allocate_monthly.findMany({
           orderBy: { period_month: "asc" },
           take: 5000,
         });
@@ -219,8 +219,8 @@ export async function GET(request: NextRequest) {
         for (const row of rows) {
           const period = String(row.period_month).slice(0, 10);
           periods.add(period);
-          const key = row.pl5_code || "unknown";
-          seriesLabels.set(key, row.pl5_name || key);
+          const key = row.category_code || "unknown";
+          seriesLabels.set(key, row.category_name || key);
           if (!seriesMap.has(key)) seriesMap.set(key, new Map());
           seriesMap.get(key)!.set(
             period,
@@ -238,7 +238,7 @@ export async function GET(request: NextRequest) {
       }
 
       case "dealer-dn": {
-        const rows = await prisma.ods_dealer_upn_dn.findMany({
+        const rows = await prisma.ods_dealer_sku_dn.findMany({
           orderBy: { created_on: "asc" },
           take: 5000,
         });
@@ -266,7 +266,7 @@ export async function GET(request: NextRequest) {
       }
 
       case "dealer-open-order": {
-        const rows = await prisma.ods_dealer_upn_open_order.findMany({
+        const rows = await prisma.ods_dealer_sku_open_order.findMany({
           take: 5000,
         });
         const aggMap = new Map<string, number>();
@@ -280,8 +280,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ data });
       }
 
-      case "bsc-inventory": {
-        const rows = await prisma.ods_bsc_upn_inventory.findMany({
+      case "central-warehouse-inventory": {
+        const rows = await prisma.ods_central_warehouse_sku_inventory.findMany({
           take: 5000,
         });
         const aggMap = new Map<string, number>();
@@ -295,8 +295,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ data });
       }
 
-      case "bsc-intransit": {
-        const rows = await prisma.ods_bsc_upn_intransit.findMany({
+      case "central-warehouse-intransit": {
+        const rows = await prisma.ods_central_warehouse_sku_intransit.findMany({
           orderBy: { forecast_date: "asc" },
           take: 5000,
         });
@@ -324,11 +324,11 @@ export async function GET(request: NextRequest) {
       }
 
       case "safety-stock": {
-        const rows = await prisma.ods_upn_safety_stock_manual.findMany({
+        const rows = await prisma.ods_sku_safety_stock_manual.findMany({
           take: 1000,
         });
         const data = rows.map((row) => ({
-          name: row.upn || "unknown",
+          name: row.sku || "unknown",
           value: Number(row.safety_stock_qty ?? 0),
         }));
         data.sort((a, b) => b.value - a.value);
@@ -336,12 +336,12 @@ export async function GET(request: NextRequest) {
       }
 
       case "purchase-price": {
-        const rows = await prisma.ods_lp_upn_purchase_price.findMany({
+        const rows = await prisma.ods_channel_sku_purchase_price.findMany({
           take: 1000,
         });
         const data = rows.map((row) => ({
-          name: row.upn || "unknown",
-          value: Number(row.bsc_std_sell_price ?? 0),
+          name: row.sku || "unknown",
+          value: Number(row.central_warehouse_std_sell_price ?? 0),
         }));
         data.sort((a, b) => b.value - a.value);
         return NextResponse.json({ data });

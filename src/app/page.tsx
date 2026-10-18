@@ -9,7 +9,7 @@ import { loadSupplyChainOverview } from "@/server/services/dashboard/supply-chai
 const workspaces = [
   { title: "数据工作台", detail: "主数据、库存与订单", href: "/data", icon: Database, tone: "bg-blue-50 text-blue-700" },
   { title: "全局查询", detail: "快速追溯业务关系", href: "/data/query", icon: Search, tone: "bg-cyan-50 text-cyan-700" },
-  { title: "补货计划", detail: "月度规划与周度执行", href: "/calc/upn-split", icon: Calculator, tone: "bg-violet-50 text-violet-700" },
+  { title: "补货计划", detail: "月度规划与周度执行", href: "/calc/sku-split", icon: Calculator, tone: "bg-violet-50 text-violet-700" },
   { title: "分析洞察", detail: "趋势与结果可视化", href: "/calc/dashboard", icon: ChartNoAxesCombined, tone: "bg-emerald-50 text-emerald-700" },
   { title: "过程追溯", detail: "输入、约束与输出", href: "/calc/process", icon: Route, tone: "bg-amber-50 text-amber-700" },
 ];
@@ -21,8 +21,8 @@ export default async function Home() {
   const metrics = [
     { label: "管理中 SKU", value: overview.skuCount.toLocaleString("zh-CN"), detail: `${overview.categoryCount} 个产品分类`, icon: PackageCheck, tone: "text-blue-700 bg-blue-50", href: "/calc/weekly-results" },
     { label: "需关注风险", value: overview.anomalySkuCount.toLocaleString("zh-CN"), detail: `${healthRate}% SKU 状态正常`, icon: AlertTriangle, tone: "text-rose-700 bg-rose-50", href: "/exceptions" },
-    { label: "在途总量", value: overview.intransitQty.toLocaleString("zh-CN", { maximumFractionDigits: 0 }), detail: `覆盖 ${overview.intransitSkuCount} 个 SKU`, icon: Truck, tone: "text-cyan-700 bg-cyan-50", href: "/data/bsc-upn-intransit" },
-    { label: "有效约束", value: `${overview.constraintTypeCount} 类`, detail: `${overview.constrainedSkuCount} 个 SKU 已配置`, icon: ShieldCheck, tone: "text-violet-700 bg-violet-50", href: "/data/upn-constraint" },
+    { label: "在途总量", value: overview.intransitQty.toLocaleString("zh-CN", { maximumFractionDigits: 0 }), detail: `覆盖 ${overview.intransitSkuCount} 个 SKU`, icon: Truck, tone: "text-cyan-700 bg-cyan-50", href: "/data/central-warehouse-sku-intransit" },
+    { label: "有效约束", value: `${overview.constraintTypeCount} 类`, detail: `${overview.constrainedSkuCount} 个 SKU 已配置`, icon: ShieldCheck, tone: "text-violet-700 bg-violet-50", href: "/data/sku-constraint" },
   ];
 
   return (
@@ -37,7 +37,7 @@ export default async function Home() {
             <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">连接需求、库存与在途，把分散的数据变成清晰判断，让每一次补货决策都有依据。</p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link href="/exceptions" className="inline-flex h-11 items-center gap-2 rounded-xl bg-cyan-300 px-4 text-sm font-semibold text-slate-950 shadow-lg shadow-cyan-400/10 transition hover:bg-cyan-200">查看今日风险 <ArrowRight className="size-4" /></Link>
-              <Link href="/calc/upn-split" className="inline-flex h-11 items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-medium text-white backdrop-blur transition hover:bg-white/10"><Calculator className="size-4" />进入补货计划与执行</Link>
+              <Link href="/calc/sku-split" className="inline-flex h-11 items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-medium text-white backdrop-blur transition hover:bg-white/10"><Calculator className="size-4" />进入补货计划与执行</Link>
             </div>
           </div>
         </div>

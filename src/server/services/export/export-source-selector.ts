@@ -1,8 +1,8 @@
 ﻿import { prisma } from "@/lib/prisma";
 import {
-  listLoadedBscUpnInventoryRows,
-  listLoadedBscUpnIntransitRows,
-  listLoadedActiveUpnRows,
+  listLoadedCentralWarehouseSkuInventoryRows,
+  listLoadedCentralWarehouseSkuIntransitRows,
+  listLoadedActiveSkuRows,
   listLoadedCalcBatches,
   listLoadedCalcResultRows,
   listCalcTraceRows,
@@ -10,21 +10,21 @@ import {
   listLoadedCalcResultRowsByPeriodMonth,
   listLoadedCalcTraceRowsByPeriodMonth,
   listLoadedCalendarPatternWeeklyRows,
-  listLoadedDealerUpnDnRows,
-  listLoadedDealerUpnOpenOrderRows,
+  listLoadedDealerSkuDnRows,
+  listLoadedDealerSkuOpenOrderRows,
   listLoadedDiohTargetRows,
-  listLoadedFcstLpPl5Rows,
-  listLoadedFcstT2Pl5Rows,
+  listLoadedFcstChannelCategoryRows,
+  listLoadedFcstT2CategoryRows,
   listLoadedInventoryRows,
   listLoadedBuPatternAmountWeeklyRows,
-  listLoadedLpUpnPurchasePriceRows,
-  listLoadedLpPl5AllocateRows,
-  listLoadedLpPl5StatusRows,
-  listLoadedLpPl5UpnStatusRows,
+  listLoadedChannelSkuPurchasePriceRows,
+  listLoadedChannelCategoryAllocateRows,
+  listLoadedChannelCategoryStatusRows,
+  listLoadedChannelCategorySkuStatusRows,
   listLoadedT2PurchaseRows,
-  listLoadedUpnBundleRows,
-  listLoadedUpnConstraintRows,
-  listLoadedUpnSafetyStockRows,
+  listLoadedSkuBundleRows,
+  listLoadedSkuConstraintRows,
+  listLoadedSkuSafetyStockRows,
   listLoadedWeeklyAmountThresholdRows,
   listWeeklyCalcBatches,
   getCalcResultNameLookup,
@@ -46,57 +46,57 @@ export async function getLoadedExportRows(
   filters?: ExportRequest,
 ) {
   switch (table) {
-    case "ods_inventory_dealer_upn":
+    case "ods_inventory_dealer_sku":
       return listLoadedInventoryRows();
     case "ods_t2_purchase_monthly":
       return listLoadedT2PurchaseRows();
-    case "ods_dioh_dealer_upn":
+    case "ods_dioh_dealer_sku":
       return listLoadedDiohTargetRows();
-    case "ods_fcst_lp_pl5_monthly":
-      return listLoadedFcstLpPl5Rows();
-    case "ods_fcst_t2_pl5_monthly":
-      return listLoadedFcstT2Pl5Rows();
-    case "ods_lp_pl5_allocate_monthly":
-      return listLoadedLpPl5AllocateRows();
-    case "ods_upn_active_list":
-      return listLoadedActiveUpnRows();
-    case "ods_dealer_upn_dn":
-      return listLoadedDealerUpnDnRows();
-    case "ods_dealer_upn_open_order":
-      return listLoadedDealerUpnOpenOrderRows();
-    case "ods_bsc_upn_inventory":
-      return listLoadedBscUpnInventoryRows();
-    case "ods_bsc_upn_intransit":
-      return listLoadedBscUpnIntransitRows();
-    case "ods_upn_safety_stock_manual":
-      return listLoadedUpnSafetyStockRows();
-    case "ods_upn_constraint_manual":
-      return listLoadedUpnConstraintRows();
-    case "ods_upn_bundle_manual":
-      return listLoadedUpnBundleRows();
-    case "ods_lp_upn_purchase_price":
-      return getLpUpnPurchasePriceExportRows();
+    case "ods_fcst_channel_category_monthly":
+      return listLoadedFcstChannelCategoryRows();
+    case "ods_fcst_t2_category_monthly":
+      return listLoadedFcstT2CategoryRows();
+    case "ods_channel_category_allocate_monthly":
+      return listLoadedChannelCategoryAllocateRows();
+    case "ods_sku_active_list":
+      return listLoadedActiveSkuRows();
+    case "ods_dealer_sku_dn":
+      return listLoadedDealerSkuDnRows();
+    case "ods_dealer_sku_open_order":
+      return listLoadedDealerSkuOpenOrderRows();
+    case "ods_central_warehouse_sku_inventory":
+      return listLoadedCentralWarehouseSkuInventoryRows();
+    case "ods_central_warehouse_sku_intransit":
+      return listLoadedCentralWarehouseSkuIntransitRows();
+    case "ods_sku_safety_stock_manual":
+      return listLoadedSkuSafetyStockRows();
+    case "ods_sku_constraint_manual":
+      return listLoadedSkuConstraintRows();
+    case "ods_sku_bundle_manual":
+      return listLoadedSkuBundleRows();
+    case "ods_channel_sku_purchase_price":
+      return getChannelSkuPurchasePriceExportRows();
     case "ods_calendar_pattern_weekly":
       return listLoadedCalendarPatternWeeklyRows();
     case "ods_weekly_amount_threshold_manual":
       return listLoadedWeeklyAmountThresholdRows();
     case "ods_bu_pattern_amount_weekly":
       return getBuPatternAmountWeeklyExportRows();
-    case "list_lp_pl5_status_monthly":
-      return listLoadedLpPl5StatusRows();
-    case "list_lp_pl5_upn_status_monthly":
-      return listLoadedLpPl5UpnStatusRows();
+    case "list_channel_category_status_monthly":
+      return listLoadedChannelCategoryStatusRows();
+    case "list_channel_category_sku_status_monthly":
+      return listLoadedChannelCategorySkuStatusRows();
     case "calc_batch":
       return listLoadedCalcBatches();
-    case "calc_weekly_upn_split_batch":
+    case "calc_weekly_sku_split_batch":
       return listWeeklyCalcBatches();
-    case "calc_weekly_upn_split_result":
+    case "calc_weekly_sku_split_result":
       if (batchId) return getWeeklyCalcBatchDetailRows(batchId, filters);
       return filters?.calendarDate ? getWeeklyCalcBatchDetailRowsByCalendarDate(filters.calendarDate) : [];
-    case "calc_upn_split_result":
+    case "calc_sku_split_result":
       if (batchId) return listLoadedCalcResultRows(batchId);
       return filters?.periodMonth ? listLoadedCalcResultRowsByPeriodMonth(filters.periodMonth) : [];
-    case "calc_upn_split_trace":
+    case "calc_sku_split_trace":
       if (batchId) return listLoadedCalcTraceRows(batchId);
       return filters?.periodMonth ? listLoadedCalcTraceRowsByPeriodMonth(filters.periodMonth) : [];
   }
@@ -104,9 +104,9 @@ export async function getLoadedExportRows(
 
 export async function getBatchExportRows(table: ExportRequest["table"], batchId: string) {
   switch (table) {
-    case "calc_upn_split_result":
-      return getCalcUpnSplitResultRows(batchId);
-    case "calc_upn_split_trace":
+    case "calc_sku_split_result":
+      return getCalcSkuSplitResultRows(batchId);
+    case "calc_sku_split_trace":
       return listCalcTraceRows(batchId);
     default:
       return getAllExportRows(table);
@@ -115,54 +115,54 @@ export async function getBatchExportRows(table: ExportRequest["table"], batchId:
 
 export async function getAllExportRows(table: ExportRequest["table"]) {
   switch (table) {
-    case "ods_inventory_dealer_upn":
-      return prisma.ods_inventory_dealer_upn.findMany({ take: 10000 });
+    case "ods_inventory_dealer_sku":
+      return prisma.ods_inventory_dealer_sku.findMany({ take: 10000 });
     case "ods_t2_purchase_monthly":
       return prisma.ods_t2_purchase_monthly.findMany({ take: 10000 });
-    case "ods_dioh_dealer_upn":
-      return prisma.ods_dioh_dealer_upn.findMany({ take: 10000 });
-    case "ods_fcst_lp_pl5_monthly":
-      return prisma.ods_fcst_lp_pl5_monthly.findMany({ take: 10000 });
-    case "ods_fcst_t2_pl5_monthly":
-      return prisma.ods_fcst_t2_pl5_monthly.findMany({ take: 10000 });
-    case "ods_lp_pl5_allocate_monthly":
-      return prisma.ods_lp_pl5_allocate_monthly.findMany({ take: 10000 });
-    case "ods_upn_active_list":
-      return prisma.ods_upn_active_list.findMany({ take: 10000 });
-    case "ods_dealer_upn_dn":
-      return listLoadedDealerUpnDnRows();
-    case "ods_dealer_upn_open_order":
-      return listLoadedDealerUpnOpenOrderRows();
-    case "ods_bsc_upn_inventory":
-      return listLoadedBscUpnInventoryRows();
-    case "ods_bsc_upn_intransit":
-      return listLoadedBscUpnIntransitRows();
-    case "ods_upn_safety_stock_manual":
-      return listLoadedUpnSafetyStockRows();
-    case "ods_upn_constraint_manual":
-      return listLoadedUpnConstraintRows();
-    case "ods_upn_bundle_manual":
-      return listLoadedUpnBundleRows();
-    case "ods_lp_upn_purchase_price":
-      return getLpUpnPurchasePriceExportRows();
+    case "ods_dioh_dealer_sku":
+      return prisma.ods_dioh_dealer_sku.findMany({ take: 10000 });
+    case "ods_fcst_channel_category_monthly":
+      return prisma.ods_fcst_channel_category_monthly.findMany({ take: 10000 });
+    case "ods_fcst_t2_category_monthly":
+      return prisma.ods_fcst_t2_category_monthly.findMany({ take: 10000 });
+    case "ods_channel_category_allocate_monthly":
+      return prisma.ods_channel_category_allocate_monthly.findMany({ take: 10000 });
+    case "ods_sku_active_list":
+      return prisma.ods_sku_active_list.findMany({ take: 10000 });
+    case "ods_dealer_sku_dn":
+      return listLoadedDealerSkuDnRows();
+    case "ods_dealer_sku_open_order":
+      return listLoadedDealerSkuOpenOrderRows();
+    case "ods_central_warehouse_sku_inventory":
+      return listLoadedCentralWarehouseSkuInventoryRows();
+    case "ods_central_warehouse_sku_intransit":
+      return listLoadedCentralWarehouseSkuIntransitRows();
+    case "ods_sku_safety_stock_manual":
+      return listLoadedSkuSafetyStockRows();
+    case "ods_sku_constraint_manual":
+      return listLoadedSkuConstraintRows();
+    case "ods_sku_bundle_manual":
+      return listLoadedSkuBundleRows();
+    case "ods_channel_sku_purchase_price":
+      return getChannelSkuPurchasePriceExportRows();
     case "ods_calendar_pattern_weekly":
       return prisma.ods_calendar_pattern_weekly.findMany({ take: 10000 });
     case "ods_weekly_amount_threshold_manual":
       return prisma.ods_weekly_amount_threshold_manual.findMany({ take: 10000 });
     case "ods_bu_pattern_amount_weekly":
       return getBuPatternAmountWeeklyExportRows();
-    case "list_lp_pl5_status_monthly":
-      return prisma.list_lp_pl5_status_monthly.findMany({ take: 10000 });
-    case "list_lp_pl5_upn_status_monthly":
-      return prisma.list_lp_pl5_upn_status_monthly.findMany({ take: 10000 });
+    case "list_channel_category_status_monthly":
+      return prisma.list_channel_category_status_monthly.findMany({ take: 10000 });
+    case "list_channel_category_sku_status_monthly":
+      return prisma.list_channel_category_sku_status_monthly.findMany({ take: 10000 });
     case "calc_batch":
       return prisma.calc_batch.findMany({ orderBy: { created_at: "desc" }, take: 10000 });
-    case "calc_weekly_upn_split_batch":
-      return prisma.calc_weekly_upn_split_batch.findMany({ orderBy: { created_at: "desc" }, take: 10000 });
-    case "calc_weekly_upn_split_result":
+    case "calc_weekly_sku_split_batch":
+      return prisma.calc_weekly_sku_split_batch.findMany({ orderBy: { created_at: "desc" }, take: 10000 });
+    case "calc_weekly_sku_split_result":
       return [];
-    case "calc_upn_split_result":
-    case "calc_upn_split_trace":
+    case "calc_sku_split_result":
+    case "calc_sku_split_trace":
       return [];
   }
 }
@@ -172,13 +172,13 @@ export async function getFilteredExportRows(
   filters?: ExportRequest
 ) {
   switch (table) {
-    case "ods_fcst_lp_pl5_monthly":
-      return prisma.ods_fcst_lp_pl5_monthly.findMany({
+    case "ods_fcst_channel_category_monthly":
+      return prisma.ods_fcst_channel_category_monthly.findMany({
         where: buildYearMonthWhere(filters),
         take: 10000,
       });
-    case "ods_fcst_t2_pl5_monthly":
-      return prisma.ods_fcst_t2_pl5_monthly.findMany({
+    case "ods_fcst_t2_category_monthly":
+      return prisma.ods_fcst_t2_category_monthly.findMany({
         where: buildYearMonthWhere(filters),
         take: 10000,
       });
@@ -187,32 +187,32 @@ export async function getFilteredExportRows(
         where: buildYearMonthWhere(filters),
         take: 10000,
       });
-    case "ods_inventory_dealer_upn":
-      return prisma.ods_inventory_dealer_upn.findMany({
+    case "ods_inventory_dealer_sku":
+      return prisma.ods_inventory_dealer_sku.findMany({
         where: buildYearMonthWhere(filters),
         take: 10000,
       });
-    case "ods_upn_active_list":
-      return prisma.ods_upn_active_list.findMany({
+    case "ods_sku_active_list":
+      return prisma.ods_sku_active_list.findMany({
         where: buildYearMonthWhere(filters),
         take: 10000,
       });
-    case "ods_dealer_upn_dn":
-      return listLoadedDealerUpnDnRows();
-    case "ods_dealer_upn_open_order":
-      return listLoadedDealerUpnOpenOrderRows();
-    case "ods_bsc_upn_inventory":
-      return listLoadedBscUpnInventoryRows();
-    case "ods_bsc_upn_intransit":
-      return listLoadedBscUpnIntransitRows();
-    case "ods_upn_safety_stock_manual":
-      return listLoadedUpnSafetyStockRows();
-    case "ods_upn_constraint_manual":
-      return listLoadedUpnConstraintRows();
-    case "ods_upn_bundle_manual":
-      return listLoadedUpnBundleRows();
-    case "ods_lp_upn_purchase_price":
-      return getLpUpnPurchasePriceExportRows();
+    case "ods_dealer_sku_dn":
+      return listLoadedDealerSkuDnRows();
+    case "ods_dealer_sku_open_order":
+      return listLoadedDealerSkuOpenOrderRows();
+    case "ods_central_warehouse_sku_inventory":
+      return listLoadedCentralWarehouseSkuInventoryRows();
+    case "ods_central_warehouse_sku_intransit":
+      return listLoadedCentralWarehouseSkuIntransitRows();
+    case "ods_sku_safety_stock_manual":
+      return listLoadedSkuSafetyStockRows();
+    case "ods_sku_constraint_manual":
+      return listLoadedSkuConstraintRows();
+    case "ods_sku_bundle_manual":
+      return listLoadedSkuBundleRows();
+    case "ods_channel_sku_purchase_price":
+      return getChannelSkuPurchasePriceExportRows();
     case "ods_calendar_pattern_weekly":
       return prisma.ods_calendar_pattern_weekly.findMany({
         where: filters?.periodMonth ? buildPeriodMonthWhere(filters.periodMonth) : undefined,
@@ -220,31 +220,31 @@ export async function getFilteredExportRows(
       });
     case "ods_weekly_amount_threshold_manual":
       return prisma.ods_weekly_amount_threshold_manual.findMany({
-        orderBy: { sc_bu: "asc" },
+        orderBy: { business_unit: "asc" },
         take: 10000,
       });
     case "ods_bu_pattern_amount_weekly":
       return getBuPatternAmountWeeklyExportRows(filters?.periodMonth);
-    case "ods_dioh_dealer_upn":
-      return prisma.ods_dioh_dealer_upn.findMany({
+    case "ods_dioh_dealer_sku":
+      return prisma.ods_dioh_dealer_sku.findMany({
         where: buildAbcToleranceWhere(filters),
         take: 10000,
       });
-    case "ods_lp_pl5_allocate_monthly":
-      return prisma.ods_lp_pl5_allocate_monthly.findMany({
+    case "ods_channel_category_allocate_monthly":
+      return prisma.ods_channel_category_allocate_monthly.findMany({
         where: buildPeriodMonthWhere(filters?.periodMonth),
         take: 10000,
       });
-    case "list_lp_pl5_status_monthly":
-      return prisma.list_lp_pl5_status_monthly.findMany({
+    case "list_channel_category_status_monthly":
+      return prisma.list_channel_category_status_monthly.findMany({
         where: {
           ...buildPeriodMonthWhere(filters?.periodMonth),
           ...buildQuotaHistoryWhere(filters),
         },
         take: 10000,
       });
-    case "list_lp_pl5_upn_status_monthly":
-      return prisma.list_lp_pl5_upn_status_monthly.findMany({
+    case "list_channel_category_sku_status_monthly":
+      return prisma.list_channel_category_sku_status_monthly.findMany({
         where: {
           ...buildPeriodMonthWhere(filters?.periodMonth),
           ...buildQuotaHistoryWhere(filters),
@@ -257,8 +257,8 @@ export async function getFilteredExportRows(
         orderBy: { created_at: "desc" },
         take: 10000,
       });
-    case "calc_weekly_upn_split_batch":
-      return prisma.calc_weekly_upn_split_batch.findMany({
+    case "calc_weekly_sku_split_batch":
+      return prisma.calc_weekly_sku_split_batch.findMany({
         where: {
           ...(filters?.periodMonth ? buildPeriodMonthWhere(filters.periodMonth) : {}),
           ...buildStatusWhere(filters),
@@ -266,16 +266,16 @@ export async function getFilteredExportRows(
         orderBy: { created_at: "desc" },
         take: 10000,
       });
-    case "calc_weekly_upn_split_result":
+    case "calc_weekly_sku_split_result":
       if (filters?.batchId) return getWeeklyCalcBatchDetailRows(filters.batchId, filters);
       return filters?.calendarDate ? getWeeklyCalcBatchDetailRowsByCalendarDate(filters.calendarDate, filters) : [];
-    case "calc_upn_split_result":
-      if (filters?.batchId) return getCalcUpnSplitResultRows(filters.batchId, filters);
-      return filters?.periodMonth ? getCalcUpnSplitResultRowsByPeriodMonth(filters.periodMonth, filters) : [];
-    case "calc_upn_split_trace":
+    case "calc_sku_split_result":
+      if (filters?.batchId) return getCalcSkuSplitResultRows(filters.batchId, filters);
+      return filters?.periodMonth ? getCalcSkuSplitResultRowsByPeriodMonth(filters.periodMonth, filters) : [];
+    case "calc_sku_split_trace":
       if (filters?.batchId) {
         return listCalcTraceRows(filters.batchId, {
-          pl5Code: filters.pl5Code,
+          categoryCode: filters.categoryCode,
           isError: filters.isError,
         });
       }
@@ -285,12 +285,12 @@ export async function getFilteredExportRows(
   }
 }
 
-async function getLpUpnPurchasePriceExportRows() {
-  const rows = await listLoadedLpUpnPurchasePriceRows();
+async function getChannelSkuPurchasePriceExportRows() {
+  const rows = await listLoadedChannelSkuPurchasePriceRows();
   return rows.map((row) => ({
     ...row,
-    bsc_std_sell_price: row.source_sell_price,
-    bsc_std_sell_price_vat: row.source_sell_price_vat,
+    central_warehouse_std_sell_price: row.source_sell_price,
+    central_warehouse_std_sell_price_vat: row.source_sell_price_vat,
     currency_code: row.source_currency,
   }));
 }
@@ -308,29 +308,29 @@ async function getBuPatternAmountWeeklyExportRows(periodMonth?: string | null) {
     }));
 }
 
-async function getCalcUpnSplitResultRows(batchId: string, filters?: ExportRequest) {
-  return prisma.calc_upn_split_result.findMany({
+async function getCalcSkuSplitResultRows(batchId: string, filters?: ExportRequest) {
+  return prisma.calc_sku_split_result.findMany({
     where: {
       batch_id: batchId,
-      ...(filters?.scBu ? { sc_bu: filters.scBu } : {}),
-      ...(filters?.lpCode ? { dealerlpcode: filters.lpCode } : {}),
-      ...(filters?.pl5Code ? { pl5_code: filters.pl5Code } : {}),
-      ...(filters?.upn ? { upn: filters.upn } : {}),
+      ...(filters?.businessUnit ? { business_unit: filters.businessUnit } : {}),
+      ...(filters?.channelCode ? { dealer_channel_code: filters.channelCode } : {}),
+      ...(filters?.categoryCode ? { category_code: filters.categoryCode } : {}),
+      ...(filters?.sku ? { sku: filters.sku } : {}),
       ...(filters?.isError ? { is_error: filters.isError === "Y" } : {}),
     },
-    orderBy: [{ dealerlpcode: "asc" }, { pl5_code: "asc" }, { upn: "asc" }],
+    orderBy: [{ dealer_channel_code: "asc" }, { category_code: "asc" }, { sku: "asc" }],
     take: 10000,
   });
 }
 
-async function getCalcUpnSplitResultRowsByPeriodMonth(periodMonth: string, filters?: ExportRequest) {
+async function getCalcSkuSplitResultRowsByPeriodMonth(periodMonth: string, filters?: ExportRequest) {
   const rows = await listLoadedCalcResultRowsByPeriodMonth(periodMonth);
 
   return rows.filter((row) => {
-    if (filters?.scBu && row.sc_bu !== filters.scBu) return false;
-    if (filters?.lpCode && row.dealerlpcode !== filters.lpCode) return false;
-    if (filters?.pl5Code && row.pl5_code !== filters.pl5Code) return false;
-    if (filters?.upn && row.upn !== filters.upn) return false;
+    if (filters?.businessUnit && row.business_unit !== filters.businessUnit) return false;
+    if (filters?.channelCode && row.dealer_channel_code !== filters.channelCode) return false;
+    if (filters?.categoryCode && row.category_code !== filters.categoryCode) return false;
+    if (filters?.sku && row.sku !== filters.sku) return false;
     if (filters?.isError && (row.is_error ? "Y" : "N") !== filters.isError) return false;
     return true;
   });
@@ -342,42 +342,42 @@ async function enrichWeeklyResultNames<T extends Record<string, unknown>>(
 ) {
   const periodMonthKey =
     periodMonth instanceof Date ? periodMonth.toISOString().slice(0, 10) : periodMonth;
-  const { lpNameByCode, pl5NameByCode } = await getCalcResultNameLookup(periodMonthKey);
+  const { channelNameByCode, categoryNameByCode } = await getCalcResultNameLookup(periodMonthKey);
 
   return rows.map((row) => {
-    const lpCode = String(row.lp_code ?? "");
-    const pl5Code = String(row.pl5_code ?? "");
+    const channelCode = String(row.channel_code ?? "");
+    const categoryCode = String(row.category_code ?? "");
 
     return {
       ...row,
-      lp_name: lpNameByCode[lpCode] ?? row.lp_name ?? lpCode,
-      pl5_name: pl5NameByCode[pl5Code] ?? row.pl5_name ?? pl5Code,
+      channel_name: channelNameByCode[channelCode] ?? row.channel_name ?? channelCode,
+      category_name: categoryNameByCode[categoryCode] ?? row.category_name ?? categoryCode,
     };
   });
 }
 
 async function getWeeklyCalcBatchDetailRows(batchId: string, filters?: ExportRequest) {
-  const detail = await prisma.calc_weekly_upn_split_batch.findUnique({
+  const detail = await prisma.calc_weekly_sku_split_batch.findUnique({
     where: { id: batchId },
     include: {
       bu_summaries: true,
       results: {
         where: {
-          ...(filters?.scBu ? { sc_bu: filters.scBu } : {}),
-          ...(filters?.lpCode ? { lp_code: filters.lpCode } : {}),
-          ...(filters?.pl5Code ? { pl5_code: filters.pl5Code } : {}),
-          ...(filters?.upn ? { upn: filters.upn } : {}),
+          ...(filters?.businessUnit ? { business_unit: filters.businessUnit } : {}),
+          ...(filters?.channelCode ? { channel_code: filters.channelCode } : {}),
+          ...(filters?.categoryCode ? { category_code: filters.categoryCode } : {}),
+          ...(filters?.sku ? { sku: filters.sku } : {}),
         },
-        orderBy: [{ sc_bu: "asc" }, { lp_code: "asc" }, { pl5_code: "asc" }, { upn: "asc" }],
+        orderBy: [{ business_unit: "asc" }, { channel_code: "asc" }, { category_code: "asc" }, { sku: "asc" }],
         take: 10000,
       },
     },
   });
   if (!detail) return [];
 
-  const summaryByBu = new Map(detail.bu_summaries.map((summary) => [summary.sc_bu, summary]));
+  const summaryByBu = new Map(detail.bu_summaries.map((summary) => [summary.business_unit, summary]));
   const rows = detail.results.map((row) => {
-    const summary = summaryByBu.get(row.sc_bu);
+    const summary = summaryByBu.get(row.business_unit);
     return {
       ...row,
       calculation_currency: detail.calculation_currency,
@@ -405,14 +405,14 @@ async function getWeeklyCalcBatchDetailRowsByCalendarDate(
 
   const rows = detail.results
     .filter((row) => {
-      if (filters?.scBu && row.sc_bu !== filters.scBu) return false;
-      if (filters?.lpCode && row.lp_code !== filters.lpCode) return false;
-      if (filters?.pl5Code && row.pl5_code !== filters.pl5Code) return false;
-      if (filters?.upn && row.upn !== filters.upn) return false;
+      if (filters?.businessUnit && row.business_unit !== filters.businessUnit) return false;
+      if (filters?.channelCode && row.channel_code !== filters.channelCode) return false;
+      if (filters?.categoryCode && row.category_code !== filters.categoryCode) return false;
+      if (filters?.sku && row.sku !== filters.sku) return false;
       return true;
     })
     .map((row) => {
-      const summary = detail.bu_summaries.find((item) => item.sc_bu === row.sc_bu);
+      const summary = detail.bu_summaries.find((item) => item.business_unit === row.business_unit);
       return {
         ...row,
         calculation_currency: detail.calculation_currency,

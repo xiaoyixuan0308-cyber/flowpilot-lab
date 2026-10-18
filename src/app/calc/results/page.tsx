@@ -16,8 +16,8 @@ const columns: Column<CalcBatchTableRow>[] = [
   { key: "calculated_at", header: "生成时间", hrefKey: "detail_href" },
   { key: "period_month", header: "月份" },
   { key: "status", header: "状态" },
-  { key: "total_upns", header: "总结果行" },
-  { key: "error_upns", header: "异常行" },
+  { key: "total_skus", header: "总结果行" },
+  { key: "error_skus", header: "异常行" },
 ];
 
 export default async function ResultsListPage() {
@@ -57,7 +57,7 @@ export default async function ResultsListPage() {
                 打开最新计算流程
               </Link>
               <Link
-                href="/calc/upn-split"
+                href="/calc/sku-split"
                 className="text-primary underline whitespace-nowrap"
               >
                 打开结果快照
@@ -73,8 +73,8 @@ export default async function ResultsListPage() {
               { label: "生成时间", value: overview.latestBatch.calculated_at },
               { label: "月份", value: overview.latestBatch.period_month },
               { label: "状态", value: overview.latestBatch.status },
-              { label: "总结果行", value: overview.latestBatch.total_upns },
-              { label: "异常行", value: overview.latestBatch.error_upns },
+              { label: "总结果行", value: overview.latestBatch.total_skus },
+              { label: "异常行", value: overview.latestBatch.error_skus },
             ]}
           />
         ) : (
@@ -83,7 +83,7 @@ export default async function ResultsListPage() {
             description={
               <>
                 请前往
-                <Link href="/calc/upn-split" className="text-primary underline mx-1">
+                <Link href="/calc/sku-split" className="text-primary underline mx-1">
                   结果快照
                 </Link>
                 页面先生成第一版结果数据。
@@ -112,7 +112,7 @@ export default async function ResultsListPage() {
             description={
               <>
                 请前往
-                <Link href="/calc/upn-split" className="text-primary underline mx-1">
+                <Link href="/calc/sku-split" className="text-primary underline mx-1">
                   结果快照
                 </Link>
                 页面查看或生成快照版本

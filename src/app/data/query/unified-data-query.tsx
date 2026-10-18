@@ -14,49 +14,49 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type SearchType = "lp" | "pl5" | "upn";
+type SearchType = "channel" | "category" | "sku";
 type TableType = "monthly" | "weekly";
 
 type QueryRow = {
-  lp_code: string;
-  lp_name: string;
-  pl5_code: string;
-  pl5_name: string;
-  upn: string;
+  channel_code: string;
+  channel_name: string;
+  category_code: string;
+  category_name: string;
+  sku: string;
   source: string;
 };
 
 type QueryResponse = {
   total?: number;
   rows?: Array<{
-    lp_code: string;
-    lp_name: string | null;
-    pl5_code: string;
-    pl5_name: string | null;
-    upn: string;
+    channel_code: string;
+    channel_name: string | null;
+    category_code: string;
+    category_name: string | null;
+    sku: string;
     source: string;
   }>;
   error?: string;
 };
 
 const columns: Column<QueryRow>[] = [
-  { key: "lp_name", header: "经销商名称" },
-  { key: "lp_code", header: "经销商编码" },
-  { key: "pl5_name", header: "产品分类名称" },
-  { key: "pl5_code", header: "产品分类编码" },
-  { key: "upn", header: "SKU" },
+  { key: "channel_name", header: "经销商名称" },
+  { key: "channel_code", header: "经销商编码" },
+  { key: "category_name", header: "产品分类名称" },
+  { key: "category_code", header: "产品分类编码" },
+  { key: "sku", header: "SKU" },
   { key: "source", header: "数据范围" },
 ];
 
 const searchTypes: Array<{ value: SearchType; label: string; placeholder: string }> = [
-  { value: "lp", label: "经销商（LP）", placeholder: "输入经销商名称或编码" },
-  { value: "pl5", label: "产品层级（产品分类）", placeholder: "输入 产品分类 名称或编码" },
-  { value: "upn", label: "物料（SKU）", placeholder: "输入 SKU 编码" },
+  { value: "channel", label: "经销商（渠道）", placeholder: "输入经销商名称或编码" },
+  { value: "category", label: "产品层级（产品分类）", placeholder: "输入 产品分类 名称或编码" },
+  { value: "sku", label: "物料（SKU）", placeholder: "输入 SKU 编码" },
 ];
 
 export function UnifiedDataQuery() {
   const [table, setTable] = useState<TableType>("monthly");
-  const [type, setType] = useState<SearchType>("lp");
+  const [type, setType] = useState<SearchType>("channel");
   const [keyword, setKeyword] = useState("");
   const [rows, setRows] = useState<QueryRow[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
@@ -87,11 +87,11 @@ export function UnifiedDataQuery() {
 
       setRows(
         (payload.rows ?? []).map((row) => ({
-          lp_code: row.lp_code,
-          lp_name: row.lp_name ?? "",
-          pl5_code: row.pl5_code,
-          pl5_name: row.pl5_name ?? "",
-          upn: row.upn,
+          channel_code: row.channel_code,
+          channel_name: row.channel_name ?? "",
+          category_code: row.category_code,
+          category_name: row.category_name ?? "",
+          sku: row.sku,
           source: row.source === "monthly" ? "月拆分" : "周拆分",
         })),
       );
@@ -175,16 +175,16 @@ export function UnifiedDataQuery() {
           searchPlaceholder="在当前结果中继续筛选"
           filters={[
             {
-              key: "lp_code",
+              key: "channel_code",
               label: "经销商",
               placeholder: "全部经销商",
-              optionLabelKey: "lp_name",
+              optionLabelKey: "channel_name",
             },
             {
-              key: "pl5_code",
+              key: "category_code",
               label: "产品分类",
               placeholder: "全部产品分类",
-              optionLabelKey: "pl5_name",
+              optionLabelKey: "category_name",
             },
           ]}
         />

@@ -1,10 +1,10 @@
 import { CalculationInputError } from "@/server/services/calc/calculation-input-error";
-import { getUpnSplitErrorDefinition } from "@/server/constants/upn-split-error-catalog";
+import { getSkuSplitErrorDefinition } from "@/server/constants/sku-split-error-catalog";
 import type {
-  LpPl5ScopeRow,
-  LpPl5StatusRow,
-  LpPl5UpnStatusRow,
-  Pl5UpnScopeRow,
+  ChannelCategoryScopeRow,
+  ChannelCategoryStatusRow,
+  ChannelCategorySkuStatusRow,
+  CategorySkuScopeRow,
   ScopeArtifacts,
   ScopeSourceData,
 } from "./scope.types";
@@ -14,13 +14,13 @@ type NamedSources = Map<string, { name: string | null; sources: Set<string> }>;
 
 function putNamedSource(
   map: NamedSources,
-  scBu: string,
+  businessUnit: string,
   code: string | null | undefined,
   name: string | null | undefined,
   source: string,
 ) {
   if (!code) return;
-  const key = `${scBu}|${code}`;
+  const key = `${businessUnit}|${code}`;
   const current = map.get(key);
   if (!current) {
     map.set(key, { name: name ?? null, sources: new Set([source]) });
@@ -48,8 +48,8 @@ function buildStatusNote(hasQuota: boolean, hasHistory: boolean) {
 
 function resolveStatusErrorCode(hasQuota: boolean, hasHistory: boolean) {
   if (hasHistory) return null;
-  if (hasQuota) return getUpnSplitErrorDefinition("HAS_FCST_PL5_NO_HISTORY").code;
-  return getUpnSplitErrorDefinition("NO_FCST_PL5_NO_HISTORY").code;
+  if (hasQuota) return getSkuSplitErrorDefinition("HAS_FCST_CATEGORY_NO_HISTORY").code;
+  return getSkuSplitErrorDefinition("NO_FCST_CATEGORY_NO_HISTORY").code;
 }
 
 function splitBusinessKey(key: string) {
@@ -58,46 +58,46 @@ function splitBusinessKey(key: string) {
 }
 
 export function buildScopeArtifacts(source: ScopeSourceData): ScopeArtifacts {
-  const { periodMonth, t2Purchases, fcstLpPl5, fcstT2Pl5 } = source;
+  const { periodMonth, t2Purchases, fcstChannelCategory, fcstT2Category } = source;
   const { year, month } = getYearMonth(periodMonth);
   const mtdPurchases = t2Purchases.filter((row) => row.year === year && row.month === month);
-  const lpMap: NamedSources = new Map();
-  const pl5Map: NamedSources = new Map();
+  const channelMap: NamedSources = new Map();
+  const categoryMap: NamedSources = new Map();
 
-  for (const row of fcstLpPl5) {
+  for (const row of fcstChannelCategory) {
     if (row.year !== year || row.month !== month) continue;
-    putNamedSource(lpMap, row.sc_bu, row.dealerlpcode, row.dealerlpname, "ODS_FCST_LP_PL5");
-    putNamedSource(pl5Map, row.sc_bu, row.pl5_code, row.pl5_name, "ODS_FCST_LP_PL5");
+    putNamedSource(channelMap, row.business_unit, row.dealer_channel_code, row.dealer_channel_name, "ODS_FCST_CHANNEL_CATEGORY");
+    putNamedSource(categoryMap, row.business_unit, row.category_code, row.category_name, "ODS_FCST_CHANNEL_CATEGORY");
   }
-  for (const row of fcstT2Pl5) {
+  for (const row of fcstT2Category) {
     if (row.year !== year || row.month !== month) continue;
-    putNamedSource(lpMap, row.sc_bu, row.parentdealerlpcode, row.parentdealerlpname, "ODS_FCST_T2_PL5");
-    putNamedSource(pl5Map, row.sc_bu, row.pl5_code, row.pl5_name, "ODS_FCST_T2_PL5");
+    putNamedSource(channelMap, row.business_unit, row.parent_dealer_channel_code, row.parent_dealer_channel_name, "ODS_FCST_T2_CATEGORY");
+    putNamedSource(categoryMap, row.business_unit, row.category_code, row.category_name, "ODS_FCST_T2_CATEGORY");
   }
   for (const row of mtdPurchases) {
-    putNamedSource(lpMap, row.sc_bu, row.parentdealerlpcode, row.parentdealerlpname, "ODS_T2_PURCHASE");
-    putNamedSource(pl5Map, row.sc_bu, row.pl5_code, row.pl5_name, "ODS_T2_PURCHASE");
+    putNamedSource(channelMap, row.business_unit, row.parent_dealer_channel_code, row.parent_dealer_channel_name, "ODS_T2_PURCHASE");
+    putNamedSource(categoryMap, row.business_unit, row.category_code, row.category_name, "ODS_T2_PURCHASE");
   }
 
   const businessUnits = new Set(
-    [...lpMap.keys(), ...pl5Map.keys()].map((key) => splitBusinessKey(key)[0]),
+    [...channelMap.keys(), ...categoryMap.keys()].map((key) => splitBusinessKey(key)[0]),
   );
-  const lpPl5ScopeRows: LpPl5ScopeRow[] = [];
-  for (const scBu of businessUnits) {
-    const lps = [...lpMap.entries()].filter(([key]) => splitBusinessKey(key)[0] === scBu);
-    const pl5s = [...pl5Map.entries()].filter(([key]) => splitBusinessKey(key)[0] === scBu);
-    for (const [lpKey, lpInfo] of lps) {
-      const lpCode = splitBusinessKey(lpKey)[1];
-      for (const [pl5Key, pl5Info] of pl5s) {
-        const pl5Code = splitBusinessKey(pl5Key)[1];
-        lpPl5ScopeRows.push({
+  const channelCategoryScopeRows: ChannelCategoryScopeRow[] = [];
+  for (const businessUnit of businessUnits) {
+    const channels = [...channelMap.entries()].filter(([key]) => splitBusinessKey(key)[0] === businessUnit);
+    const categories = [...categoryMap.entries()].filter(([key]) => splitBusinessKey(key)[0] === businessUnit);
+    for (const [channelKey, channelInfo] of channels) {
+      const channelCode = splitBusinessKey(channelKey)[1];
+      for (const [categoryKey, categoryInfo] of categories) {
+        const categoryCode = splitBusinessKey(categoryKey)[1];
+        channelCategoryScopeRows.push({
           periodMonth,
-          scBu,
-          lpCode,
-          lpName: lpInfo.name,
-          pl5Code,
-          pl5Name: pl5Info.name,
-          scopeSource: `LP:${[...lpInfo.sources].join("|")};PL5:${[...pl5Info.sources].join("|")}`,
+          businessUnit,
+          channelCode,
+          channelName: channelInfo.name,
+          categoryCode,
+          categoryName: categoryInfo.name,
+          scopeSource: `Channel:${[...channelInfo.sources].join("|")};Category:${[...categoryInfo.sources].join("|")}`,
         });
       }
     }
@@ -107,19 +107,19 @@ export function buildScopeArtifacts(source: ScopeSourceData): ScopeArtifacts {
     .map(getYearMonth);
   const historyMonthSet = new Set(historyMonths.map((item) => `${item.year}-${item.month}`));
   const quotaMap = sumByKey(
-    fcstLpPl5.filter((row) => row.year === year && row.month === month),
-    (row) => `${row.sc_bu}|${row.dealerlpcode}|${row.pl5_code}`,
+    fcstChannelCategory.filter((row) => row.year === year && row.month === month),
+    (row) => `${row.business_unit}|${row.dealer_channel_code}|${row.category_code}`,
     (row) => row.fcst_qty,
   );
   const historyMap = sumByKey(
     t2Purchases.filter(
-      (row) => historyMonthSet.has(`${row.year}-${row.month}`) && Boolean(row.parentdealerlpcode),
+      (row) => historyMonthSet.has(`${row.year}-${row.month}`) && Boolean(row.parent_dealer_channel_code),
     ),
-    (row) => `${row.sc_bu}|${row.parentdealerlpcode}|${row.pl5_code}`,
+    (row) => `${row.business_unit}|${row.parent_dealer_channel_code}|${row.category_code}`,
     (row) => row.qty,
   );
-  const lpPl5StatusRows: LpPl5StatusRow[] = lpPl5ScopeRows.map((row) => {
-    const key = `${row.scBu}|${row.lpCode}|${row.pl5Code}`;
+  const channelCategoryStatusRows: ChannelCategoryStatusRow[] = channelCategoryScopeRows.map((row) => {
+    const key = `${row.businessUnit}|${row.channelCode}|${row.categoryCode}`;
     const quotaQty = quotaMap.get(key) ?? null;
     const historyQty = historyMap.get(key) ?? null;
     const hasQuota = quotaQty !== null && quotaQty > 0;
@@ -135,54 +135,54 @@ export function buildScopeArtifacts(source: ScopeSourceData): ScopeArtifacts {
     };
   });
 
-  const upnPl5Map = new Map<string, Set<string>>();
-  const pl5UpnSources = new Map<string, Set<string>>();
-  const pl5NameByBu = new Map<string, string | null>();
+  const skuCategoryMap = new Map<string, Set<string>>();
+  const categorySkuSources = new Map<string, Set<string>>();
+  const categoryNameByBu = new Map<string, string | null>();
   for (const row of t2Purchases) {
-    const key = `${row.sc_bu}|${row.pl5_code}|${row.upn}`;
-    const sources = pl5UpnSources.get(key) ?? new Set<string>();
+    const key = `${row.business_unit}|${row.category_code}|${row.sku}`;
+    const sources = categorySkuSources.get(key) ?? new Set<string>();
     sources.add("ODS_T2_PURCHASE");
-    pl5UpnSources.set(key, sources);
-    const pl5Codes = upnPl5Map.get(row.upn) ?? new Set<string>();
-    pl5Codes.add(row.pl5_code);
-    upnPl5Map.set(row.upn, pl5Codes);
-    if (row.pl5_name) pl5NameByBu.set(`${row.sc_bu}|${row.pl5_code}`, row.pl5_name);
+    categorySkuSources.set(key, sources);
+    const categoryCodes = skuCategoryMap.get(row.sku) ?? new Set<string>();
+    categoryCodes.add(row.category_code);
+    skuCategoryMap.set(row.sku, categoryCodes);
+    if (row.category_name) categoryNameByBu.set(`${row.business_unit}|${row.category_code}`, row.category_name);
   }
 
-  const duplicateUpnIssues = [...upnPl5Map.entries()]
-    .filter(([, pl5Codes]) => pl5Codes.size > 1)
-    .map(([upn, pl5Codes]) => ({
+  const duplicateSkuIssues = [...skuCategoryMap.entries()]
+    .filter(([, categoryCodes]) => categoryCodes.size > 1)
+    .map(([sku, categoryCodes]) => ({
       source: "T2采购历史",
-      field: "pl5_code",
-      key: upn,
-      message: `UPN 同时归属多个 PL5：${[...pl5Codes].sort().join(", ")}`,
+      field: "category_code",
+      key: sku,
+      message: `SKU 同时归属多个 产品分类：${[...categoryCodes].sort().join(", ")}`,
     }));
-  if (duplicateUpnIssues.length > 0) throw new CalculationInputError(duplicateUpnIssues);
+  if (duplicateSkuIssues.length > 0) throw new CalculationInputError(duplicateSkuIssues);
 
-  const pl5UpnScopeRows: Pl5UpnScopeRow[] = [...pl5UpnSources.entries()].map(([key, sources]) => {
-    const [scBu, pl5Code, upn] = key.split("|");
+  const categorySkuScopeRows: CategorySkuScopeRow[] = [...categorySkuSources.entries()].map(([key, sources]) => {
+    const [businessUnit, categoryCode, sku] = key.split("|");
     return {
       periodMonth,
-      scBu,
-      pl5Code,
-      pl5Name: pl5NameByBu.get(`${scBu}|${pl5Code}`) ?? null,
-      upn,
-      upnSource: [...sources].join("|"),
+      businessUnit,
+      categoryCode,
+      categoryName: categoryNameByBu.get(`${businessUnit}|${categoryCode}`) ?? null,
+      sku,
+      skuSource: [...sources].join("|"),
     };
   });
 
-  const lpPl5UpnStatusRows: LpPl5UpnStatusRow[] = [];
-  for (const status of lpPl5StatusRows) {
-    for (const scopedUpn of pl5UpnScopeRows) {
-      if (scopedUpn.scBu !== status.scBu || scopedUpn.pl5Code !== status.pl5Code) continue;
-      lpPl5UpnStatusRows.push({
+  const channelCategorySkuStatusRows: ChannelCategorySkuStatusRow[] = [];
+  for (const status of channelCategoryStatusRows) {
+    for (const scopedSku of categorySkuScopeRows) {
+      if (scopedSku.businessUnit !== status.businessUnit || scopedSku.categoryCode !== status.categoryCode) continue;
+      channelCategorySkuStatusRows.push({
         periodMonth,
-        scBu: status.scBu,
-        lpCode: status.lpCode,
-        lpName: status.lpName,
-        pl5Code: status.pl5Code,
-        pl5Name: status.pl5Name,
-        upn: scopedUpn.upn,
+        businessUnit: status.businessUnit,
+        channelCode: status.channelCode,
+        channelName: status.channelName,
+        categoryCode: status.categoryCode,
+        categoryName: status.categoryName,
+        sku: scopedSku.sku,
         hasQuota: status.hasQuota,
         hasHistory: status.hasHistory,
         quotaQty: status.quotaQty,
@@ -193,5 +193,5 @@ export function buildScopeArtifacts(source: ScopeSourceData): ScopeArtifacts {
     }
   }
 
-  return { lpPl5ScopeRows, lpPl5StatusRows, pl5UpnScopeRows, lpPl5UpnStatusRows };
+  return { channelCategoryScopeRows, channelCategoryStatusRows, categorySkuScopeRows, channelCategorySkuStatusRows };
 }

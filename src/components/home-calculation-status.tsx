@@ -91,8 +91,8 @@ export function HomeCalculationStatus() {
 
   const StatusIcon = statusView.icon;
   const calculationHref = summary.calendarDate
-    ? `/calc/upn-split?calendarDate=${encodeURIComponent(summary.calendarDate)}`
-    : "/calc/upn-split";
+    ? `/calc/sku-split?calendarDate=${encodeURIComponent(summary.calendarDate)}`
+    : "/calc/sku-split";
 
   async function selectCalendarDate(calendarDate: string) {
     setLoading(true);

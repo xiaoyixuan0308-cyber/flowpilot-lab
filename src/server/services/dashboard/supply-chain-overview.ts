@@ -35,16 +35,16 @@ function asNumber(value: unknown) {
 }
 
 export async function loadSupplyChainOverview(): Promise<SupplyChainOverview> {
-  const latestBatch = await prisma.calc_weekly_upn_split_batch.findFirst({
+  const latestBatch = await prisma.calc_weekly_sku_split_batch.findFirst({
     orderBy: [{ calculated_at: "desc" }, { created_at: "desc" }],
     select: {
       calendar_date: true,
-      total_upns: true,
+      total_skus: true,
       results: {
         select: {
-          upn: true,
-          pl5_code: true,
-          sc_bu: true,
+          sku: true,
+          category_code: true,
+          business_unit: true,
           inventory_status: true,
           unit_price: true,
           safety_stock_qty: true,
@@ -64,16 +64,16 @@ export async function loadSupplyChainOverview(): Promise<SupplyChainOverview> {
     ? new Date(calendarDate.getTime() + 7 * 24 * 60 * 60 * 1000)
     : null;
   const [intransit, intransitRows, constraints, delayedRows] = await Promise.all([
-    prisma.ods_bsc_upn_intransit.aggregate({ _sum: { intransit_qty: true } }),
-    prisma.ods_bsc_upn_intransit.findMany({
+    prisma.ods_central_warehouse_sku_intransit.aggregate({ _sum: { intransit_qty: true } }),
+    prisma.ods_central_warehouse_sku_intransit.findMany({
       distinct: ["material"],
       select: { material: true },
     }),
-    prisma.ods_upn_constraint_manual.findMany({
-      select: { upn: true, constraint_type: true },
+    prisma.ods_sku_constraint_manual.findMany({
+      select: { sku: true, constraint_type: true },
     }),
     delayThreshold
-      ? prisma.ods_bsc_upn_intransit.findMany({
+      ? prisma.ods_central_warehouse_sku_intransit.findMany({
           where: { forecast_date: { gt: delayThreshold } },
           distinct: ["material"],
           select: { material: true },
@@ -88,11 +88,11 @@ export async function loadSupplyChainOverview(): Promise<SupplyChainOverview> {
         const average = asNumber(row.bj_t2_purchase_3m_avg_qty);
         return average > 0 && asNumber(row.month_quota_qty) > average * 1.3;
       })
-      .map((row) => row.upn),
+      .map((row) => row.sku),
   );
   const arrivalDelay = unique(delayedRows.map((row) => row.material));
   const supplyShortage = unique(
-    rows.filter((row) => row.inventory_status === "STOP").map((row) => row.upn),
+    rows.filter((row) => row.inventory_status === "STOP").map((row) => row.sku),
   );
   const inventoryBacklog = unique(
     rows
@@ -101,7 +101,7 @@ export async function loadSupplyChainOverview(): Promise<SupplyChainOverview> {
           asNumber(row.post_suggest_dioh) > 90 ||
           asNumber(row.ab_current_inventory_days) > 90,
       )
-      .map((row) => row.upn),
+      .map((row) => row.sku),
   );
   const constraintConflict = unique(
     rows
@@ -110,12 +110,12 @@ export async function loadSupplyChainOverview(): Promise<SupplyChainOverview> {
           Boolean(row.constraint_types?.trim()) &&
           row.adjustment_allowed_flag === "N",
       )
-      .map((row) => row.upn),
+      .map((row) => row.sku),
   );
   const dataQuality = unique(
     rows
       .filter((row) => row.unit_price === null || row.safety_stock_qty === null)
-      .map((row) => row.upn),
+      .map((row) => row.sku),
   );
   const allAnomalySkus = unique([
     ...demandSurge,
@@ -133,14 +133,14 @@ export async function loadSupplyChainOverview(): Promise<SupplyChainOverview> {
 
   return {
     calendarDate: calendarDate?.toISOString().slice(0, 10) ?? null,
-    skuCount: latestBatch?.total_upns ?? 0,
-    categoryCount: new Set(rows.map((row) => row.pl5_code)).size,
-    businessUnitCount: new Set(rows.map((row) => row.sc_bu)).size,
+    skuCount: latestBatch?.total_skus ?? 0,
+    categoryCount: new Set(rows.map((row) => row.category_code)).size,
+    businessUnitCount: new Set(rows.map((row) => row.business_unit)).size,
     anomalySkuCount: allAnomalySkus.length,
     intransitQty: asNumber(intransit._sum.intransit_qty),
     intransitSkuCount: intransitRows.length,
     constraintTypeCount: new Set(constraints.map((row) => row.constraint_type)).size,
-    constrainedSkuCount: new Set(constraints.map((row) => row.upn)).size,
+    constrainedSkuCount: new Set(constraints.map((row) => row.sku)).size,
     exceptions: {
       demandSurge: group(demandSurge),
       arrivalDelay: group(arrivalDelay),

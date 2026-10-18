@@ -12,9 +12,9 @@ export interface ResultDimensionOption {
 
 export interface ResultDimensionValues {
   bu: string;
-  lp: string;
-  pl5: string;
-  upn: string;
+  channel: string;
+  category: string;
+  sku: string;
 }
 
 interface DimensionComboboxProps {
@@ -101,9 +101,9 @@ interface ResultDimensionFiltersProps {
   values: ResultDimensionValues;
   candidates: {
     bu: ResultDimensionOption[];
-    lp: ResultDimensionOption[];
-    pl5: ResultDimensionOption[];
-    upn: ResultDimensionOption[];
+    channel: ResultDimensionOption[];
+    category: ResultDimensionOption[];
+    sku: ResultDimensionOption[];
   };
   onChange: (key: keyof ResultDimensionValues, value: string) => void;
   onClearAll: () => void;
@@ -115,7 +115,7 @@ export function ResultDimensionFilters({
   onChange,
   onClearAll,
 }: ResultDimensionFiltersProps) {
-  const hasSelection = Boolean(values.bu || values.lp || values.pl5 || values.upn);
+  const hasSelection = Boolean(values.bu || values.channel || values.category || values.sku);
 
   return (
     <div className="flex flex-wrap items-end gap-2">
@@ -127,21 +127,21 @@ export function ResultDimensionFilters({
       />
       <DimensionCombobox
         label="渠道"
-        value={values.lp}
-        options={candidates.lp}
-        onChange={(value) => onChange("lp", value)}
+        value={values.channel}
+        options={candidates.channel}
+        onChange={(value) => onChange("channel", value)}
       />
       <DimensionCombobox
         label="产品分类"
-        value={values.pl5}
-        options={candidates.pl5}
-        onChange={(value) => onChange("pl5", value)}
+        value={values.category}
+        options={candidates.category}
+        onChange={(value) => onChange("category", value)}
       />
       <DimensionCombobox
         label="SKU"
-        value={values.upn}
-        options={candidates.upn}
-        onChange={(value) => onChange("upn", value)}
+        value={values.sku}
+        options={candidates.sku}
+        onChange={(value) => onChange("sku", value)}
       />
       <Button type="button" variant="outline" size="sm" onClick={onClearAll} disabled={!hasSelection}>
         <X className="size-4" />

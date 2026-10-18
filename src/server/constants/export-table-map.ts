@@ -1,68 +1,68 @@
 export const EXPORT_TABLE_META = {
-  ods_inventory_dealer_upn: {
+  ods_inventory_dealer_sku: {
     displayName: "库存基础表",
-    fields: ["dealerlpcode", "dealerlpname", "upn", "qty", "year", "month"],
+    fields: ["dealer_channel_code", "dealer_channel_name", "sku", "qty", "year", "month"],
   },
   ods_t2_purchase_monthly: {
     displayName: "T2采购历史表",
-    fields: ["parentdealerlpcode", "parentdealerlpname", "sc_bu", "upn", "pl5_code", "pl5_name", "qty", "year", "month"],
+    fields: ["parent_dealer_channel_code", "parent_dealer_channel_name", "business_unit", "sku", "category_code", "category_name", "qty", "year", "month"],
   },
-  ods_dioh_dealer_upn: {
+  ods_dioh_dealer_sku: {
     displayName: "DIOH规则表",
-    fields: ["dealerlpcode", "dealerlpname", "upn", "abc_class", "dioh_days"],
+    fields: ["dealer_channel_code", "dealer_channel_name", "sku", "abc_class", "dioh_days"],
   },
-  ods_fcst_lp_pl5_monthly: {
-    displayName: "LP-PL5配货预测表",
-    fields: ["dealerlpcode", "dealerlpname", "sc_bu", "pl5_code", "pl5_name", "fcst_qty", "year", "month"],
+  ods_fcst_channel_category_monthly: {
+    displayName: "渠道-产品分类配货预测表",
+    fields: ["dealer_channel_code", "dealer_channel_name", "business_unit", "category_code", "category_name", "fcst_qty", "year", "month"],
   },
-  ods_fcst_t2_pl5_monthly: {
-    displayName: "T2-PL5预测表",
-    fields: ["parentdealerlpcode", "parentdealerlpname", "sc_bu", "pl5_code", "pl5_name", "fcst_qty", "year", "month"],
+  ods_fcst_t2_category_monthly: {
+    displayName: "二级渠道-产品分类预测表",
+    fields: ["parent_dealer_channel_code", "parent_dealer_channel_name", "business_unit", "category_code", "category_name", "fcst_qty", "year", "month"],
   },
-  ods_lp_pl5_allocate_monthly: {
-    displayName: "LP-PL5配额矩阵",
-    fields: ["period_month", "dealerlpcode", "dealerlpname", "pl5_code", "pl5_name", "allocate_qty"],
+  ods_channel_category_allocate_monthly: {
+    displayName: "渠道-产品分类配额矩阵",
+    fields: ["period_month", "dealer_channel_code", "dealer_channel_name", "category_code", "category_name", "allocate_qty"],
   },
-  ods_upn_active_list: {
-    displayName: "UPN范围关系表",
-    fields: ["dealerlpcode", "dealerlpname", "pl5_code", "pl5_name", "upn", "year", "month"],
+  ods_sku_active_list: {
+    displayName: "SKU范围关系表",
+    fields: ["dealer_channel_code", "dealer_channel_name", "category_code", "category_name", "sku", "year", "month"],
   },
-  ods_dealer_upn_dn: {
+  ods_dealer_sku_dn: {
     displayName: "经销商发货记录",
-    fields: ["created_on", "sold_to_pt", "sc_bu", "dealer_type", "material", "delivery_qty"],
+    fields: ["created_on", "sold_to_pt", "business_unit", "dealer_type", "material", "delivery_qty"],
   },
-  ods_dealer_upn_open_order: {
+  ods_dealer_sku_open_order: {
     displayName: "经销商未清订单",
-    fields: ["customer", "sc_bu", "dealer_type", "material", "dctp", "open_qty"],
+    fields: ["customer", "business_unit", "dealer_type", "material", "dctp", "open_qty"],
   },
-  ods_bsc_upn_inventory: {
-    displayName: "BSC库存",
+  ods_central_warehouse_sku_inventory: {
+    displayName: "中央仓库存",
     fields: ["material", "sloc", "unrestricted_qty"],
   },
-  ods_bsc_upn_intransit: {
-    displayName: "BSC在途库存",
+  ods_central_warehouse_sku_intransit: {
+    displayName: "中央仓在途库存",
     fields: ["material", "forecast_date", "intransit_qty"],
   },
-  ods_upn_safety_stock_manual: {
+  ods_sku_safety_stock_manual: {
     displayName: "安全库存",
-    fields: ["upn", "safety_stock_qty"],
+    fields: ["sku", "safety_stock_qty"],
   },
-  ods_lp_upn_purchase_price: {
-    displayName: "Dealer UPN单价",
-    fields: ["dealer_code", "dealer_type", "upn", "bsc_std_sell_price", "bsc_std_sell_price_vat", "currency_code"],
+  ods_channel_sku_purchase_price: {
+    displayName: "经销商SKU单价",
+    fields: ["dealer_code", "dealer_type", "sku", "central_warehouse_std_sell_price", "central_warehouse_std_sell_price_vat", "currency_code"],
   },
-  ods_upn_constraint_manual: {
-    displayName: "UPN周月约束规则",
-    fields: ["period_month", "sc_bu", "upn", "constraint_type", "source_system"],
+  ods_sku_constraint_manual: {
+    displayName: "SKU周月约束规则",
+    fields: ["period_month", "business_unit", "sku", "constraint_type", "source_system"],
   },
-  ods_upn_bundle_manual: {
-    displayName: "UPN套包规则",
-    fields: ["upn", "bundle_qty", "source_system"],
+  ods_sku_bundle_manual: {
+    displayName: "SKU套包规则",
+    fields: ["sku", "bundle_qty", "source_system"],
   },
   ods_calendar_pattern_weekly: {
     displayName: "周历与周配比",
     fields: [
-      "sc_bu",
+      "business_unit",
       "period_month",
       "month_start_date",
       "week_start_date",
@@ -74,37 +74,37 @@ export const EXPORT_TABLE_META = {
   ods_weekly_amount_threshold_manual: {
     displayName: "周金额调整阈值",
     fields: [
-      "sc_bu",
+      "business_unit",
       "overage_threshold_pct",
       "shortfall_threshold_pct",
       "source_system",
     ],
   },
   ods_bu_pattern_amount_weekly: {
-    displayName: "SCBU周/月预算",
+    displayName: "业务单元周/月预算",
     fields: [
       "period_week",
       "period_month",
-      "sc_bu",
+      "business_unit",
       "actual_amount",
       "month_target_amount",
       "month_limit_amount",
       "currency_code",
     ],
   },
-  list_lp_pl5_status_monthly: {
-    displayName: "LP-PL5状态表",
-    fields: ["period_month", "sc_bu", "lp_code", "lp_name", "pl5_code", "pl5_name", "has_quota", "has_history", "quota_qty", "history_qty_m6_m1", "status_note", "error_id"],
+  list_channel_category_status_monthly: {
+    displayName: "渠道-产品分类状态表",
+    fields: ["period_month", "business_unit", "channel_code", "channel_name", "category_code", "category_name", "has_quota", "has_history", "quota_qty", "history_qty_m6_m1", "status_note", "error_id"],
   },
-  list_lp_pl5_upn_status_monthly: {
-    displayName: "LP-PL5-UPN状态表",
-    fields: ["period_month", "sc_bu", "lp_code", "lp_name", "pl5_code", "pl5_name", "upn", "has_quota", "has_history", "quota_qty", "history_qty_m6_m1", "status_note", "error_id"],
+  list_channel_category_sku_status_monthly: {
+    displayName: "渠道-产品分类-SKU状态表",
+    fields: ["period_month", "business_unit", "channel_code", "channel_name", "category_code", "category_name", "sku", "has_quota", "has_history", "quota_qty", "history_qty_m6_m1", "status_note", "error_id"],
   },
   calc_batch: {
     displayName: "月拆分结果列表",
-    fields: ["id", "period_month", "status", "total_upns", "error_upns", "calculated_at", "created_at"],
+    fields: ["id", "period_month", "status", "total_skus", "error_skus", "calculated_at", "created_at"],
   },
-  calc_weekly_upn_split_batch: {
+  calc_weekly_sku_split_batch: {
     displayName: "周拆分结果列表",
     fields: [
       "id",
@@ -112,7 +112,7 @@ export const EXPORT_TABLE_META = {
       "calendar_date",
       "status",
       "total_rows",
-      "total_upns",
+      "total_skus",
       "current_week_pattern_pct",
       "month_le_amount",
       "actual_amount",
@@ -133,11 +133,11 @@ export const EXPORT_TABLE_META = {
       "created_at",
     ],
   },
-  calc_weekly_upn_split_result: {
+  calc_weekly_sku_split_result: {
     displayName: "周拆分结果明细",
     fields: [
       "batch_id",
-      "sc_bu",
+      "business_unit",
       "calculation_currency",
       "usd_to_cny_rate",
       "overage_threshold_pct",
@@ -146,16 +146,16 @@ export const EXPORT_TABLE_META = {
       "system_default_pattern_gap_amount",
       "final_amount_total",
       "final_pattern_gap_amount",
-      "lp_code",
-      "lp_name",
-      "pl5_code",
-      "pl5_name",
-      "upn",
+      "channel_code",
+      "channel_name",
+      "category_code",
+      "category_name",
+      "sku",
       "month_quota_qty",
       "current_week_pattern_pct",
       "aa_month_delivered_suggestion_pct",
       "ab_current_inventory_days",
-      "bb_upn_abc_class",
+      "bb_sku_abc_class",
       "be_original_target_inventory_qty",
       "bf_current_inventory_qty",
       "bj_t2_purchase_3m_avg_qty",
@@ -171,22 +171,22 @@ export const EXPORT_TABLE_META = {
       "v_other_dealer_open_order_non_or_qty",
       "w_open_order_non_or_total_qty",
       "x_open_order_total_qty",
-      "bsc_inventory_qty",
+      "central_warehouse_inventory_qty",
       "intransit_qty",
       "safety_stock_qty",
-      "bsc_available_qty",
+      "central_warehouse_available_qty",
       "week_quota_pattern_qty",
       "week_target_pending_qty",
       "week_target_pending_total_qty",
       "inventory_status",
       "suggest_qty",
-      "remaining_bsc_available_qty",
+      "remaining_central_warehouse_available_qty",
       "target_inventory_adjustable_qty",
       "post_suggest_dioh",
       "unit_price",
       "suggest_amount",
       "system_adjusted_suggest_qty",
-      "upn_month_cap_qty",
+      "sku_month_cap_qty",
       "constraint_types",
       "adjustment_allowed_flag",
       "monthly_remaining_adjustable_qty",
@@ -199,15 +199,15 @@ export const EXPORT_TABLE_META = {
       "final_amount",
     ],
   },
-  calc_upn_split_result: {
+  calc_sku_split_result: {
     displayName: "月拆分结果明细",
     fields: [
       "batch_id",
-      "sc_bu",
-      "dealerlpcode",
-      "pl5_code",
-      "upn",
-      "lp_code",
+      "business_unit",
+      "dealer_channel_code",
+      "category_code",
+      "sku",
+      "channel_code",
       "e_t2_mix_portion",
       "f_t2_purchase_3m_avg",
       "g_t2_purchase_m0",
@@ -217,7 +217,7 @@ export const EXPORT_TABLE_META = {
       "k_target_days",
       "l_tolerance",
       "q_actual_theoretical",
-      "q_star_pl5_theoretical",
+      "q_star_category_theoretical",
       "w_mtg_allocate_qty",
       "r_base_replenish",
       "s_tolerance_replenish",
@@ -229,21 +229,21 @@ export const EXPORT_TABLE_META = {
       "error_id",
     ],
   },
-  calc_upn_split_trace: {
+  calc_sku_split_trace: {
     displayName: "月拆分过程追踪",
     fields: [
       "batch_id",
       "period_month",
-      "sc_bu",
-      "dealerlpcode",
-      "pl5_code",
-      "upn",
-      "lp_code",
+      "business_unit",
+      "dealer_channel_code",
+      "category_code",
+      "sku",
+      "channel_code",
       "h_t2_purchase_mtd",
       "e_t2_mix_portion",
-      "t_pl5_purchase_m2",
-      "u_pl5_purchase_m1",
-      "v_pl5_purchase_m0_fcst",
+      "t_category_purchase_m2",
+      "u_category_purchase_m1",
+      "v_category_purchase_m0_fcst",
       "f_t2_purchase_3m_avg",
       "g_t2_purchase_m0",
       "j_opening_inventory",
@@ -253,15 +253,15 @@ export const EXPORT_TABLE_META = {
       "current_dioh",
       "replenish_gap_to_30_qty",
       "w_mtg_allocate_qty",
-      "j_star_pl5_inventory",
-      "i_star_pl5_mtg",
+      "j_star_category_inventory",
+      "i_star_category_mtg",
       "x_after_allocate_days",
       "m_original_target_inventory",
       "n_new_target_inventory",
       "o_final_target_inventory",
       "p_theoretical_replenish",
       "q_actual_theoretical",
-      "q_star_pl5_theoretical",
+      "q_star_category_theoretical",
       "r_base_replenish",
       "s_tolerance_replenish",
       "t_adjusted_dioh",

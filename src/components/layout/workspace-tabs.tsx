@@ -8,7 +8,7 @@ import {
   calcPageItems, dashboardPageItems, dataWorkspacePageItems, monthlyInputPageItems,
   monthlyResultPageItems, processPageItems, tempPageItems, weeklyCalculationPageItems,
   weeklyInputPageItems, weeklyResultPageItems,
-} from "@/lib/dsc-catalog";
+} from "@/lib/app-catalog";
 import { toBusinessTerm } from "@/lib/business-terminology";
 
 type WorkspaceTab = { key: string; href: string; title: string };

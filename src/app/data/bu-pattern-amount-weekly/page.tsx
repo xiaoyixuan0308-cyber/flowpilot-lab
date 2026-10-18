@@ -9,7 +9,7 @@ type Row = {
   id: string;
   period_week: string;
   period_month: string;
-  sc_bu: string;
+  business_unit: string;
   actual_amount: string;
   month_target_amount: string;
   month_limit_amount: string;
@@ -23,7 +23,7 @@ type Row = {
 const columns: Column<Row>[] = [
   { key: "period_week", header: "周开始日" },
   { key: "period_month", header: "归属月份" },
-  { key: "sc_bu", header: "业务单元" },
+  { key: "business_unit", header: "业务单元" },
   { key: "source_actual_amount", header: "原始CA累计实际金额" },
   { key: "source_month_target_amount", header: "原始CE月目标金额" },
   { key: "source_month_limit_amount", header: "原始月预算上限" },
@@ -40,7 +40,7 @@ export default async function BuPatternAmountWeeklyPage() {
     id: row.id,
     period_week: row.period_week,
     period_month: row.period_month,
-    sc_bu: row.sc_bu,
+    business_unit: row.business_unit,
     actual_amount: row.actual_amount ?? "",
     month_target_amount: row.month_target_amount,
     month_limit_amount: row.month_limit_amount,
@@ -70,7 +70,7 @@ export default async function BuPatternAmountWeeklyPage() {
         columns,
         data,
         filters: [{ key: "period_week", label: "周开始日", placeholder: "全部周", sort: "desc" }],
-        searchKey: "sc_bu",
+        searchKey: "business_unit",
         searchPlaceholder: "搜索 业务单元",
         exportTable: "ods_bu_pattern_amount_weekly",
         exportParams: {},

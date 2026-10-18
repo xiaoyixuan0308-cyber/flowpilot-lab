@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Bot } from "lucide-react";
-import type { DscNavItem } from "@/lib/dsc-catalog";
+import type { AppNavItem } from "@/lib/app-catalog";
 import {
   calcPageItems,
   dashboardPageItems,
@@ -11,9 +11,9 @@ import {
   tempPageItems,
   weeklyInputPageItems,
   weeklyResultPageItems,
-} from "@/lib/dsc-catalog";
+} from "@/lib/app-catalog";
 
-const groups: Array<{ title: string; description: string; items: DscNavItem[] }> = [
+const groups: Array<{ title: string; description: string; items: AppNavItem[] }> = [
   { title: "数据工作台", description: "导入、查询与基础数据入口", items: dataWorkspacePageItems },
   { title: "月拆分输入", description: "月拆分所需基础数据", items: monthlyInputPageItems },
   { title: "周拆分输入", description: "周拆分规则与业务数据", items: weeklyInputPageItems },

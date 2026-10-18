@@ -7,7 +7,7 @@
 git branch  # 应该显示 feat/calc-viz
 
 # 2. 安装依赖
-cd dsc-poc && npm install
+cd app-poc && npm install
 
 # 3. 生成测试数据（如果还没有）
 npm run testdata:build
@@ -29,23 +29,23 @@ open http://localhost:3011/calc/dashboard
 
 ### 2. ODS 趋势折线图（60 秒）
 
-- **T2采购历史趋势**：按月份展示各 PL5 的采购量变化
-  - Hover 查看某月某 PL5 的具体采购数量
-  - 说明：数据来自 `ods_t2_purchase_monthly` 表，X 轴为年月，每条线代表一个 Top 5 PL5
+- **T2采购历史趋势**：按月份展示各 产品分类 的采购量变化
+  - Hover 查看某月某 产品分类 的具体采购数量
+  - 说明：数据来自 `ods_t2_purchase_monthly` 表，X 轴为年月，每条线代表一个 Top 5 产品分类
 
-- **库存变化趋势**：按月展示各经销商（LP）的库存量变化
-  - 说明：数据来自 `ods_inventory_dealer_upn` 表
+- **库存变化趋势**：按月展示各经销商（渠道）的库存量变化
+  - 说明：数据来自 `ods_inventory_dealer_sku` 表
 
-- **LP-PL5 预测趋势**：按月展示 LP-PL5 级预测数量
-  - 说明：数据来自 `ods_fcst_lp_pl5_monthly` 表
+- **渠道-产品分类 预测趋势**：按月展示 渠道-产品分类 级预测数量
+  - 说明：数据来自 `ods_fcst_channel_category_monthly` 表
 
-- **T2-PL5 预测趋势**：按月展示 T2-PL5 级预测数量
-  - 说明：数据来自 `ods_fcst_t2_pl5_monthly` 表
+- **二级渠道-产品分类 预测趋势**：按月展示 二级渠道-产品分类 级预测数量
+  - 说明：数据来自 `ods_fcst_t2_category_monthly` 表
 
 - **BU 周金额趋势**：实际金额 vs 目标金额的双线对比图
   - Hover 查看某周的累计实际 vs 月目标
 
-- **LP-PL5 配额分配趋势**：按月展示配额分配量
+- **渠道-产品分类 配额分配趋势**：按月展示配额分配量
 
 ### 3. 柱状图对比（30 秒）
 
@@ -68,12 +68,12 @@ open http://localhost:3011/calc/dashboard
   - 中心数字：异常总数
   - 说明：数据来自月度计算结果中 `is_error = true` 的行
 
-- **DIOH < 30 告警 UPN 表**：列出库存天数不足 30 天的 UPN
+- **DIOH < 30 告警 SKU 表**：列出库存天数不足 30 天的 SKU
   - 按 DIOH 升序排列
   - 支持搜索和分页
 
-- **异常 UPN 明细表**（页面底部）：所有被标记为异常的 UPN
-  - 显示 LP 编码、UPN、PL5、异常信息、S 容差补货量
+- **异常 SKU 明细表**（页面底部）：所有被标记为异常的 SKU
+  - 显示 渠道 编码、SKU、产品分类、异常信息、S 容差补货量
   - 支持搜索过滤
 
 ### 5. 筛选联动（30 秒）
@@ -91,7 +91,7 @@ open http://localhost:3011/calc/dashboard
 ## 文件清单
 
 ```
-dsc-poc/
+app-poc/
 ├── src/
 │   ├── app/
 │   │   ├── api/calc/viz/
@@ -111,7 +111,7 @@ dsc-poc/
 │   │   └── donut-chart.tsx               # 环形图
 │   └── lib/
 │       ├── chart-colors.ts               # 颜色常量
-│       └── dsc-catalog.ts                # 导航项（已更新）
+│       └── app-catalog.ts                # 导航项（已更新）
 ├── package.json                           # 新增 recharts 依赖
 └── scripts/demo-viz.md                    # 本文件
 ```

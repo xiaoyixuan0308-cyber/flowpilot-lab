@@ -4,7 +4,7 @@ import {
   buildWeeklyCalcBatchTableRows,
   summarizeWeeklyCalcBatchRows,
 } from "@/lib/weekly-calc-batch-view";
-import type { WeeklyUpnSplitResponse } from "@/server/services/calc/weekly-upn-split";
+import type { WeeklySkuSplitResponse } from "@/server/services/calc/weekly-sku-split";
 import { acquireCalculationLock } from "./calculation-lock.repository";
 import { getCurrentUsdToCnyRate } from "@/server/services/currency/exchange-rate.service";
 import { getDbEnvConfig } from "@/server/constants/db-env";
@@ -47,13 +47,13 @@ async function createWeeklyCalcBatch(input: {
   periodMonth: string;
   calendarDate: string;
   sourceBatchId: string;
-  strategy: NonNullable<WeeklyUpnSplitResponse["strategy"]>;
-  summary: WeeklyUpnSplitResponse["summary"];
+  strategy: NonNullable<WeeklySkuSplitResponse["strategy"]>;
+  summary: WeeklySkuSplitResponse["summary"];
 }, db: Prisma.TransactionClient) {
   const calculatedAt = new Date();
   const exchangeRate = await getCurrentUsdToCnyRate(db);
 
-  return db.calc_weekly_upn_split_batch.create({
+  return db.calc_weekly_sku_split_batch.create({
     data: {
       period_month: toPeriodDate(input.periodMonth),
       calendar_date: toPeriodDate(input.calendarDate),
@@ -62,7 +62,7 @@ async function createWeeklyCalcBatch(input: {
       pattern_strategy: "current_week_pattern_pct",
       status: "SUCCESS",
       total_rows: input.summary.totalRows,
-      total_upns: input.summary.totalUpns,
+      total_skus: input.summary.totalSkus,
       current_week_pattern_pct: toNullableDecimal(input.summary.currentWeekPatternPct),
       month_le_amount: toNullableDecimal(input.summary.monthLeAmount),
       actual_amount: toNullableDecimal(input.summary.actualAmount),
@@ -86,10 +86,10 @@ async function createWeeklyCalcBatch(input: {
 
 async function replaceWeeklyCalcResults(
   batchId: string,
-  rows: WeeklyUpnSplitResponse["rows"],
+  rows: WeeklySkuSplitResponse["rows"],
   db: Prisma.TransactionClient
 ) {
-  await db.calc_weekly_upn_split_result.deleteMany({
+  await db.calc_weekly_sku_split_result.deleteMany({
     where: { batch_id: batchId },
   });
 
@@ -97,18 +97,18 @@ async function replaceWeeklyCalcResults(
     return;
   }
 
-  await db.calc_weekly_upn_split_result.createMany({
+  await db.calc_weekly_sku_split_result.createMany({
     data: rows.map((row) => ({
       batch_id: batchId,
-      sc_bu: row.scBu,
-      lp_code: row.lpCode,
-      pl5_code: row.pl5Code,
-      upn: row.upn,
+      business_unit: row.businessUnit,
+      channel_code: row.channelCode,
+      category_code: row.categoryCode,
+      sku: row.sku,
       month_quota_qty: toNullableDecimal(row.monthQuotaQty),
       current_week_pattern_pct: toNullableDecimal(row.currentWeekPatternPct),
       aa_month_delivered_suggestion_pct: toNullableDecimal(row.aaMonthDeliveredSuggestionPct),
       ab_current_inventory_days: toNullableDecimal(row.currentInventoryDays),
-      bb_upn_abc_class: row.bbUpnAbcClass,
+      bb_sku_abc_class: row.bbSkuAbcClass,
       be_original_target_inventory_qty: toNullableDecimal(row.originalTargetInventoryQty),
       bf_current_inventory_qty: toNullableDecimal(row.currentInventoryQty),
       bj_t2_purchase_3m_avg_qty: toNullableDecimal(row.t2Purchase3mAvgQty),
@@ -124,22 +124,22 @@ async function replaceWeeklyCalcResults(
       v_other_dealer_open_order_non_or_qty: toNullableDecimal(row.vOtherDealerOpenOrderNonOrQty),
       w_open_order_non_or_total_qty: toNullableDecimal(row.wOpenOrderNonOrTotalQty),
       x_open_order_total_qty: toNullableDecimal(row.xOpenOrderTotalQty),
-      bsc_inventory_qty: toNullableDecimal(row.yaBscInventoryQty),
+      central_warehouse_inventory_qty: toNullableDecimal(row.yaCentralWarehouseInventoryQty),
       intransit_qty: toNullableDecimal(row.ybIntransitQty),
       safety_stock_qty: toNullableDecimal(row.ycSafetyStockQty),
-      bsc_available_qty: toNullableDecimal(row.yBscAvailableQty),
+      central_warehouse_available_qty: toNullableDecimal(row.yCentralWarehouseAvailableQty),
       week_quota_pattern_qty: toNullableDecimal(row.jWeekQuotaPatternQty),
       week_target_pending_qty: toNullableDecimal(row.jaWeekTargetPendingQty),
       week_target_pending_total_qty: toNullableDecimal(row.jbWeekTargetPendingTotalQty),
       inventory_status: row.zInventoryStatus,
       suggest_qty: toNullableDecimal(row.adOrSuggestQty),
-      remaining_bsc_available_qty: toNullableDecimal(row.bhRemainingBscAvailableQty),
+      remaining_central_warehouse_available_qty: toNullableDecimal(row.bhRemainingCentralWarehouseAvailableQty),
       target_inventory_adjustable_qty: toNullableDecimal(row.biTargetInventoryAdjustableQty),
       post_suggest_dioh: toNullableDecimal(row.bkPostSuggestDioh),
       unit_price: toNullableDecimal(row.amUnitPrice),
       suggest_amount: toNullableDecimal(row.aoOrSuggestAmount),
       system_adjusted_suggest_qty: toNullableDecimal(row.saSystemAdjustedQty),
-      upn_month_cap_qty: toNullableDecimal(row.hUpnMonthlyCapQty),
+      sku_month_cap_qty: toNullableDecimal(row.hSkuMonthlyCapQty),
       constraint_types: row.baConstraintTypes,
       adjustment_allowed_flag: row.bdAdjustmentAllowedFlag,
       monthly_remaining_adjustable_qty: toNullableDecimal(row.blMonthlyRemainingAdjustableQty),
@@ -156,15 +156,15 @@ async function replaceWeeklyCalcResults(
 
 async function replaceWeeklyBuSummaries(
   batchId: string,
-  summaries: WeeklyUpnSplitResponse["buSummaries"],
+  summaries: WeeklySkuSplitResponse["buSummaries"],
   db: Prisma.TransactionClient,
 ) {
-  await db.calc_weekly_upn_split_bu_summary.deleteMany({ where: { batch_id: batchId } });
+  await db.calc_weekly_sku_split_bu_summary.deleteMany({ where: { batch_id: batchId } });
   if (summaries.length === 0) return;
-  await db.calc_weekly_upn_split_bu_summary.createMany({
+  await db.calc_weekly_sku_split_bu_summary.createMany({
     data: summaries.map((summary) => ({
       batch_id: batchId,
-      sc_bu: summary.scBu,
+      business_unit: summary.businessUnit,
       current_week_pattern_pct: toNullableDecimal(summary.currentWeekPatternPct),
       month_target_amount: toNullableDecimal(summary.monthLeAmount),
       actual_amount: toNullableDecimal(summary.actualAmount),
@@ -183,21 +183,21 @@ async function replaceWeeklyBuSummaries(
   });
 }
 
-export async function persistWeeklyUpnSplitArtifacts(
-  result: WeeklyUpnSplitResponse
+export async function persistWeeklySkuSplitArtifacts(
+  result: WeeklySkuSplitResponse
 ) {
   return prisma.$transaction(
     async (tx) => {
-      await acquireCalculationLock(tx, "weekly-upn-split", result.calendarDate);
-      return persistWeeklyUpnSplitArtifactsWithClient(tx, result);
+      await acquireCalculationLock(tx, "weekly-sku-split", result.calendarDate);
+      return persistWeeklySkuSplitArtifactsWithClient(tx, result);
     },
     { maxWait: 10_000, timeout: 120_000 }
   );
 }
 
-export async function persistWeeklyUpnSplitArtifactsWithClient(
+export async function persistWeeklySkuSplitArtifactsWithClient(
   db: Prisma.TransactionClient,
-  result: WeeklyUpnSplitResponse
+  result: WeeklySkuSplitResponse
 ) {
   await clearCurrentWeeklyCalculationOutputs(db);
   const batch = await createWeeklyCalcBatch(
@@ -212,7 +212,7 @@ export async function persistWeeklyUpnSplitArtifactsWithClient(
   );
   const exchangeRate = await getCurrentUsdToCnyRate(db);
 
-  await db.calc_weekly_upn_split_batch.update({
+  await db.calc_weekly_sku_split_batch.update({
     where: { id: batch.id },
     data: {
       period_month: toPeriodDate(result.periodMonth),
@@ -222,7 +222,7 @@ export async function persistWeeklyUpnSplitArtifactsWithClient(
       pattern_strategy: "current_week_pattern_pct",
       status: "SUCCESS",
       total_rows: result.summary.totalRows,
-      total_upns: result.summary.totalUpns,
+      total_skus: result.summary.totalSkus,
       current_week_pattern_pct: toNullableDecimal(result.summary.currentWeekPatternPct),
       month_le_amount: toNullableDecimal(result.summary.monthLeAmount),
       actual_amount: toNullableDecimal(result.summary.actualAmount),
@@ -249,11 +249,11 @@ export async function persistWeeklyUpnSplitArtifactsWithClient(
 }
 
 export async function listWeeklyCalcBatches() {
-  if (!(await ensureWeeklyCalcTableExists("calc_weekly_upn_split_batch"))) {
+  if (!(await ensureWeeklyCalcTableExists("calc_weekly_sku_split_batch"))) {
     return [];
   }
 
-  const current = await prisma.calc_weekly_upn_split_batch.findFirst({
+  const current = await prisma.calc_weekly_sku_split_batch.findFirst({
     orderBy: [{ calculated_at: "desc" }, { created_at: "desc" }],
   });
   return current ? [current] : [];
@@ -272,27 +272,27 @@ export async function getWeeklyCalcBatchSummary() {
 }
 
 export async function getWeeklyCalcBatchDetail(batchId: string) {
-  if (!(await ensureWeeklyCalcTableExists("calc_weekly_upn_split_batch"))) {
+  if (!(await ensureWeeklyCalcTableExists("calc_weekly_sku_split_batch"))) {
     return null;
   }
 
-  const batch = await prisma.calc_weekly_upn_split_batch.findFirst({
+  const batch = await prisma.calc_weekly_sku_split_batch.findFirst({
     where: { calendar_date: toPeriodDate(batchId) },
   });
 
   if (!batch) return null;
 
-  return prisma.calc_weekly_upn_split_batch.findUnique({
+  return prisma.calc_weekly_sku_split_batch.findUnique({
     where: { id: batch.id },
     include: {
-      bu_summaries: { orderBy: { sc_bu: "asc" } },
+      bu_summaries: { orderBy: { business_unit: "asc" } },
       results: {
-        orderBy: [{ sc_bu: "asc" }, { lp_code: "asc" }, { pl5_code: "asc" }, { upn: "asc" }],
+        orderBy: [{ business_unit: "asc" }, { channel_code: "asc" }, { category_code: "asc" }, { sku: "asc" }],
       },
     },
   });
 }
 
 export async function clearCurrentWeeklyCalculationOutputs(db: Prisma.TransactionClient) {
-  await db.calc_weekly_upn_split_batch.deleteMany({});
+  await db.calc_weekly_sku_split_batch.deleteMany({});
 }

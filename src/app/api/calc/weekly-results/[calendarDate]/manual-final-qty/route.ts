@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { saveWeeklyFinalQtyAdjustments } from "@/server/services/calc/weekly-upn-split/weekly-final-adjustment.service";
+import { saveWeeklyFinalQtyAdjustments } from "@/server/services/calc/weekly-sku-split/weekly-final-adjustment.service";
 
 interface RouteContext {
   params: Promise<{ calendarDate: string }>;

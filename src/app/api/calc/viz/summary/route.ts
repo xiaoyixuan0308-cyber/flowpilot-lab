@@ -12,12 +12,12 @@ export async function GET(_request: NextRequest) {
             id: true,
             period_month: true,
             status: true,
-            total_upns: true,
-            error_upns: true,
+            total_skus: true,
+            error_skus: true,
             calculated_at: true,
           },
         }),
-        prisma.calc_weekly_upn_split_batch.findMany({
+        prisma.calc_weekly_sku_split_batch.findMany({
           orderBy: { calculated_at: "desc" },
           take: 20,
           select: {
@@ -25,11 +25,11 @@ export async function GET(_request: NextRequest) {
             period_month: true,
             calendar_date: true,
             status: true,
-            total_upns: true,
+            total_skus: true,
             calculated_at: true,
           },
         }),
-        prisma.calc_upn_split_result.aggregate({
+        prisma.calc_sku_split_result.aggregate({
           _avg: { current_dioh: true, t_adjusted_dioh: true },
         }),
       ]);

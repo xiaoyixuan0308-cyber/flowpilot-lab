@@ -7,7 +7,7 @@ export const WEEKLY_STAGE_DEFINITIONS = [
     shortTitle: "周目标",
     fields: ["H_ROW", "CD", "L", "J", "JA", "JB"] as WeeklyFormulaCode[],
     batchMetrics: ["CD"] as WeeklyFormulaCode[],
-    granularity: "行级 + UPN级",
+    granularity: "行级 + SKU级",
   },
   {
     slug: "available-inventory",
@@ -15,7 +15,7 @@ export const WEEKLY_STAGE_DEFINITIONS = [
     shortTitle: "可发库存",
     fields: ["YA", "YB", "YC", "Y", "R"] as WeeklyFormulaCode[],
     batchMetrics: [] as WeeklyFormulaCode[],
-    granularity: "UPN级",
+    granularity: "SKU级",
   },
   {
     slug: "initial-suggestion",
@@ -23,7 +23,7 @@ export const WEEKLY_STAGE_DEFINITIONS = [
     shortTitle: "初始建议AD",
     fields: ["JA", "JB", "Y", "R", "Z", "AD"] as WeeklyFormulaCode[],
     batchMetrics: [] as WeeklyFormulaCode[],
-    granularity: "行级 + UPN级",
+    granularity: "行级 + SKU级",
   },
   {
     slug: "amount-gap",
@@ -45,9 +45,9 @@ export const WEEKLY_STAGE_DEFINITIONS = [
     slug: "gap-eligibility",
     title: "补差资格",
     shortTitle: "补差资格",
-    fields: ["BB", "BA", "H_UPN", "O", "JB", "BD", "BL"] as WeeklyFormulaCode[],
+    fields: ["BB", "BA", "H_SKU", "O", "JB", "BD", "BL"] as WeeklyFormulaCode[],
     batchMetrics: ["AS"] as WeeklyFormulaCode[],
-    granularity: "行级 + UPN级",
+    granularity: "行级 + SKU级",
   },
   {
     slug: "gap-allocation",
@@ -55,7 +55,7 @@ export const WEEKLY_STAGE_DEFINITIONS = [
     shortTitle: "RA/RB",
     fields: ["BH", "BI", "BK", "BL", "RA", "RB"] as WeeklyFormulaCode[],
     batchMetrics: ["AR", "AS"] as WeeklyFormulaCode[],
-    granularity: "行级 + UPN级 + 批次级",
+    granularity: "行级 + SKU级 + 批次级",
   },
   {
     slug: "final-adjustment",

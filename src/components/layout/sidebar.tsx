@@ -29,7 +29,7 @@ import {
   weeklyCalculationPageItems,
   weeklyInputPageItems,
   weeklyResultPageItems,
-} from "@/lib/dsc-catalog";
+} from "@/lib/app-catalog";
 
 type NavEntry = { title: string; href: string };
 type NavGroup = { title: string; icon: typeof Home; href?: string; items?: NavEntry[] };

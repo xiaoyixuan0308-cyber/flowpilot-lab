@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         errorRate: { total: 0, errors: 0, rate: 0 },
         distribution: [],
-        anomalyUpns: [],
+        anomalySkus: [],
         diohWarnings: [],
       });
     }
@@ -35,27 +35,27 @@ export async function GET(request: NextRequest) {
     const batchId = batches[0].id;
 
     const [totalCount, errorRows, diohWarnings] = await Promise.all([
-      prisma.calc_upn_split_result.count({ where: { batch_id: batchId } }),
-      prisma.calc_upn_split_result.findMany({
+      prisma.calc_sku_split_result.count({ where: { batch_id: batchId } }),
+      prisma.calc_sku_split_result.findMany({
         where: { batch_id: batchId, is_error: true },
         select: {
-          dealerlpcode: true,
-          upn: true,
-          pl5_code: true,
+          dealer_channel_code: true,
+          sku: true,
+          category_code: true,
           error_message: true,
           s_tolerance_replenish: true,
           t_adjusted_dioh: true,
         },
       }),
-      prisma.calc_upn_split_result.findMany({
+      prisma.calc_sku_split_result.findMany({
         where: {
           batch_id: batchId,
           t_adjusted_dioh: { lt: 30 },
         },
         select: {
-          dealerlpcode: true,
-          upn: true,
-          pl5_code: true,
+          dealer_channel_code: true,
+          sku: true,
+          category_code: true,
           current_dioh: true,
           t_adjusted_dioh: true,
         },
@@ -82,18 +82,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       errorRate,
       distribution,
-      anomalyUpns: errorRows.map((r) => ({
-        dealerlpcode: r.dealerlpcode,
-        upn: r.upn,
-        pl5_code: r.pl5_code,
+      anomalySkus: errorRows.map((r) => ({
+        dealer_channel_code: r.dealer_channel_code,
+        sku: r.sku,
+        category_code: r.category_code,
         error_message: r.error_message,
         s_tolerance_replenish: Number(r.s_tolerance_replenish ?? 0),
         t_adjusted_dioh: Number(r.t_adjusted_dioh ?? 0),
       })),
       diohWarnings: diohWarnings.map((r) => ({
-        dealerlpcode: r.dealerlpcode,
-        upn: r.upn,
-        pl5_code: r.pl5_code,
+        dealer_channel_code: r.dealer_channel_code,
+        sku: r.sku,
+        category_code: r.category_code,
         current_dioh: Number(r.current_dioh ?? 0),
         t_adjusted_dioh: Number(r.t_adjusted_dioh ?? 0),
       })),

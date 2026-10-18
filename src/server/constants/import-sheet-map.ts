@@ -2,16 +2,16 @@ export type ImportSheetTable =
   | "inventory"
   | "t2Purchase"
   | "diohTarget"
-  | "fcstLpPl5"
-  | "fcstT2Pl5"
-  | "dealerUpnDn"
-  | "dealerUpnOpenOrder"
-  | "bscUpnInventory"
-  | "bscUpnIntransit"
-  | "upnSafetyStock"
-  | "lpUpnPurchasePrice"
-  | "upnConstraint"
-  | "upnBundle"
+  | "fcstChannelCategory"
+  | "fcstT2Category"
+  | "dealerSkuDn"
+  | "dealerSkuOpenOrder"
+  | "centralWarehouseSkuInventory"
+  | "centralWarehouseSkuIntransit"
+  | "skuSafetyStock"
+  | "channelSkuPurchasePrice"
+  | "skuConstraint"
+  | "skuBundle"
   | "weeklyAmountThreshold"
   | "calendarPatternWeekly"
   | "buPatternAmountWeekly";
@@ -30,13 +30,13 @@ export interface ImportSheetDefinition {
 
 export const IMPORT_SHEET_DEFINITIONS: ImportSheetDefinition[] = [
   {
-    sheet: "本月发货-UPN",
+    sheet: "本月发货-SKU",
     table: "inventory",
     label: "库存基础表",
     templateSheetName: "库存基础表",
     aliases: ["库存数据"],
-    requiredFields: ["dealerlpcode", "upn", "qty"],
-    helpFields: "dealerlpcode, dealerlpname, upn, qty, year, month",
+    requiredFields: ["dealer_channel_code", "sku", "qty"],
+    helpFields: "dealer_channel_code, dealer_channel_name, sku, qty, year, month",
   },
   {
     sheet: "T2采购",
@@ -44,8 +44,8 @@ export const IMPORT_SHEET_DEFINITIONS: ImportSheetDefinition[] = [
     label: "T2采购历史表",
     templateSheetName: "T2采购历史表",
     aliases: ["T2采购月度"],
-    requiredFields: ["sc_bu", "upn", "pl5_code", "qty", "year", "month"],
-    helpFields: "parentdealerlpcode, parentdealerlpname, sc_bu, upn, pl5_code, pl5_name, qty, year, month",
+    requiredFields: ["business_unit", "sku", "category_code", "qty", "year", "month"],
+    helpFields: "parent_dealer_channel_code, parent_dealer_channel_name, business_unit, sku, category_code, category_name, qty, year, month",
   },
   {
     sheet: "DIOH",
@@ -53,92 +53,92 @@ export const IMPORT_SHEET_DEFINITIONS: ImportSheetDefinition[] = [
     label: "DIOH规则表",
     templateSheetName: "DIOH规则表",
     aliases: ["DIOH目标"],
-    requiredFields: ["dealerlpcode", "upn", "dioh_days"],
-    helpFields: "dealerlpcode, dealerlpname, upn, abc_class, dioh_days",
+    requiredFields: ["dealer_channel_code", "sku", "dioh_days"],
+    helpFields: "dealer_channel_code, dealer_channel_name, sku, abc_class, dioh_days",
   },
   {
-    sheet: "LP PL5 FCST",
-    table: "fcstLpPl5",
-    label: "LP-PL5配货预测表",
-    templateSheetName: "LP-PL5配货预测表",
-    aliases: ["LP PL5月度FCST"],
-    requiredFields: ["dealerlpcode", "sc_bu", "pl5_code", "fcst_qty", "year", "month"],
-    helpFields: "dealerlpcode, dealerlpname, sc_bu, pl5_code, pl5_name, fcst_qty, year, month",
+    sheet: "Channel Category FCST",
+    table: "fcstChannelCategory",
+    label: "渠道-产品分类配货预测表",
+    templateSheetName: "渠道-产品分类配货预测表",
+    aliases: ["渠道 产品分类月度FCST"],
+    requiredFields: ["dealer_channel_code", "business_unit", "category_code", "fcst_qty", "year", "month"],
+    helpFields: "dealer_channel_code, dealer_channel_name, business_unit, category_code, category_name, fcst_qty, year, month",
   },
   {
-    sheet: "T2 PL5 FCST",
-    table: "fcstT2Pl5",
-    label: "T2-PL5预测表",
-    templateSheetName: "T2-PL5预测表",
-    aliases: ["T2 PL5月度FCST"],
-    requiredFields: ["sc_bu", "pl5_code", "fcst_qty", "year", "month"],
-    helpFields: "parentdealerlpcode, parentdealerlpname, sc_bu, pl5_code, pl5_name, fcst_qty, year, month",
+    sheet: "T2 Category FCST",
+    table: "fcstT2Category",
+    label: "二级渠道-产品分类预测表",
+    templateSheetName: "二级渠道-产品分类预测表",
+    aliases: ["T2 产品分类月度FCST"],
+    requiredFields: ["business_unit", "category_code", "fcst_qty", "year", "month"],
+    helpFields: "parent_dealer_channel_code, parent_dealer_channel_name, business_unit, category_code, category_name, fcst_qty, year, month",
   },
   {
-    sheet: "Dealer UPN DN",
-    table: "dealerUpnDn",
+    sheet: "Dealer SKU DN",
+    table: "dealerSkuDn",
     label: "经销商发货记录",
     templateSheetName: "经销商发货记录",
-    requiredFields: ["created_on", "sc_bu", "dealer_type", "material", "delivery_qty"],
-    helpFields: "created_on, sold_to_pt, sc_bu, dealer_type, material, delivery_qty",
+    requiredFields: ["created_on", "business_unit", "dealer_type", "material", "delivery_qty"],
+    helpFields: "created_on, sold_to_pt, business_unit, dealer_type, material, delivery_qty",
   },
   {
-    sheet: "Dealer UPN Open Order",
-    table: "dealerUpnOpenOrder",
+    sheet: "Dealer SKU Open Order",
+    table: "dealerSkuOpenOrder",
     label: "经销商未清订单",
     templateSheetName: "经销商未清订单",
-    requiredFields: ["customer", "sc_bu", "material", "dctp", "open_qty"],
-    helpFields: "customer, sc_bu, dealer_type, material, dctp, open_qty",
+    requiredFields: ["customer", "business_unit", "material", "dctp", "open_qty"],
+    helpFields: "customer, business_unit, dealer_type, material, dctp, open_qty",
   },
   {
-    sheet: "BSC UPN Inventory",
-    table: "bscUpnInventory",
-    label: "BSC库存",
-    templateSheetName: "BSC库存",
+    sheet: "Central Warehouse SKU Inventory",
+    table: "centralWarehouseSkuInventory",
+    label: "中央仓库存",
+    templateSheetName: "中央仓库存",
     requiredFields: ["material", "sloc", "unrestricted_qty"],
     helpFields: "material, sloc, unrestricted_qty",
   },
   {
-    sheet: "BSC UPN Intransit",
-    table: "bscUpnIntransit",
-    label: "BSC在途库存",
-    templateSheetName: "BSC在途库存",
+    sheet: "Central Warehouse SKU Intransit",
+    table: "centralWarehouseSkuIntransit",
+    label: "中央仓在途库存",
+    templateSheetName: "中央仓在途库存",
     requiredFields: ["material", "forecast_date", "intransit_qty"],
     helpFields: "material, forecast_date, intransit_qty",
   },
   {
-    sheet: "UPN Safety Stock",
-    table: "upnSafetyStock",
+    sheet: "SKU Safety Stock",
+    table: "skuSafetyStock",
     label: "安全库存",
     templateSheetName: "安全库存",
-    requiredFields: ["upn", "safety_stock_qty"],
-    helpFields: "upn, safety_stock_qty",
+    requiredFields: ["sku", "safety_stock_qty"],
+    helpFields: "sku, safety_stock_qty",
   },
   {
-    sheet: "LP UPN Purchase Price",
-    table: "lpUpnPurchasePrice",
-    label: "Dealer UPN单价",
-    templateSheetName: "Dealer UPN单价",
-    requiredFields: ["dealer_code", "dealer_type", "upn", "bsc_std_sell_price", "currency_code"],
-    helpFields: "dealer_code, dealer_type, upn, bsc_std_sell_price, bsc_std_sell_price_vat, currency_code",
+    sheet: "Channel SKU Purchase Price",
+    table: "channelSkuPurchasePrice",
+    label: "经销商SKU单价",
+    templateSheetName: "经销商SKU单价",
+    requiredFields: ["dealer_code", "dealer_type", "sku", "central_warehouse_std_sell_price", "currency_code"],
+    helpFields: "dealer_code, dealer_type, sku, central_warehouse_std_sell_price, central_warehouse_std_sell_price_vat, currency_code",
   },
   {
-    sheet: "UPN Constraint",
-    table: "upnConstraint",
-    label: "UPN周月约束规则",
-    templateSheetName: "UPN周月约束规则",
-    aliases: ["约束规则", "UPN约束", "UPN周月约束"],
-    requiredFields: ["period_month", "sc_bu", "upn", "constraint_type"],
-    helpFields: "period_month, sc_bu, upn, constraint_type, source_system",
+    sheet: "SKU Constraint",
+    table: "skuConstraint",
+    label: "SKU周月约束规则",
+    templateSheetName: "SKU周月约束规则",
+    aliases: ["约束规则", "SKU约束", "SKU周月约束"],
+    requiredFields: ["period_month", "business_unit", "sku", "constraint_type"],
+    helpFields: "period_month, business_unit, sku, constraint_type, source_system",
   },
   {
-    sheet: "UPN Bundle",
-    table: "upnBundle",
-    label: "UPN套包规则",
-    templateSheetName: "UPN套包规则",
-    aliases: ["套包规则", "UPN套包", "套包"],
-    requiredFields: ["upn", "bundle_qty"],
-    helpFields: "upn, bundle_qty, source_system",
+    sheet: "SKU Bundle",
+    table: "skuBundle",
+    label: "SKU套包规则",
+    templateSheetName: "SKU套包规则",
+    aliases: ["套包规则", "SKU套包", "套包"],
+    requiredFields: ["sku", "bundle_qty"],
+    helpFields: "sku, bundle_qty, source_system",
   },
   {
     sheet: "Weekly Amount Threshold",
@@ -147,11 +147,11 @@ export const IMPORT_SHEET_DEFINITIONS: ImportSheetDefinition[] = [
     templateSheetName: "周金额调整阈值",
     aliases: ["金额调整阈值", "周金额阈值"],
     requiredFields: [
-      "sc_bu",
+      "business_unit",
       "overage_threshold_pct",
       "shortfall_threshold_pct",
     ],
-    helpFields: "sc_bu, overage_threshold_pct, shortfall_threshold_pct",
+    helpFields: "business_unit, overage_threshold_pct, shortfall_threshold_pct",
     templateHeaders: ["SC BU", "超额缩减阈值(%)", "缺口补差阈值(%)"],
   },
   {
@@ -161,7 +161,7 @@ export const IMPORT_SHEET_DEFINITIONS: ImportSheetDefinition[] = [
     templateSheetName: "周历与周配比",
     aliases: ["周历与Pattern"],
     requiredFields: [
-      "sc_bu",
+      "business_unit",
       "period_month",
       "month_start_date",
       "week_start_date",
@@ -169,15 +169,15 @@ export const IMPORT_SHEET_DEFINITIONS: ImportSheetDefinition[] = [
       "current_week_pattern_pct",
     ],
     helpFields:
-      "sc_bu, period_month, month_start_date, week_start_date, week_end_date, prev_week_pattern_pct, current_week_pattern_pct",
+      "business_unit, period_month, month_start_date, week_start_date, week_end_date, prev_week_pattern_pct, current_week_pattern_pct",
   },
   {
     sheet: "BU Pattern Amount Weekly",
     table: "buPatternAmountWeekly",
-    label: "SCBU周/月预算",
+    label: "业务单元周/月预算",
     templateSheetName: "BU周金额目标",
-    requiredFields: ["period_week", "period_month", "sc_bu", "month_target_amount", "month_limit_amount", "currency_code"],
-    helpFields: "period_week, period_month, sc_bu, actual_amount, month_target_amount, month_limit_amount, currency_code",
+    requiredFields: ["period_week", "period_month", "business_unit", "month_target_amount", "month_limit_amount", "currency_code"],
+    helpFields: "period_week, period_month, business_unit, actual_amount, month_target_amount, month_limit_amount, currency_code",
   },
 ];
 

@@ -32,7 +32,7 @@ export default function DataOverviewPage() {
 
       <SectionCard
         title="数据操作"
-        description="整包维护适合批量更新，统一查询适合按 LP、产品分类 或 SKU 快速定位数据关系。"
+        description="整包维护适合批量更新，统一查询适合按 渠道、产品分类 或 SKU 快速定位数据关系。"
         action={<BaseTableActions />}
         contentClassName="flex flex-wrap items-center justify-between gap-3"
       >

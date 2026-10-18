@@ -20,22 +20,22 @@ import {
 
 const CALC_RESULT_EXPORT_FIELDS = [
   "batch_id",
-  "lp_name",
-  "pl5_name",
-  "upn",
+  "channel_name",
+  "category_name",
+  "sku",
   "e_t2_mix_portion",
   "f_t2_purchase_3m_avg",
   "g_t2_purchase_m0",
   "h_t2_purchase_mtd",
-  "t_pl5_purchase_m2",
-  "u_pl5_purchase_m1",
-  "v_pl5_purchase_m0_fcst",
+  "t_category_purchase_m2",
+  "u_category_purchase_m1",
+  "v_category_purchase_m0_fcst",
   "i_t2_purchase_mtg",
   "j_opening_inventory",
   "k_target_days",
   "l_tolerance",
   "q_actual_theoretical",
-  "q_star_pl5_theoretical",
+  "q_star_category_theoretical",
   "w_mtg_allocate_qty",
   "r_base_replenish",
   "s_tolerance_replenish",
@@ -56,15 +56,15 @@ function emptyCalcExportMetrics() {
     f_t2_purchase_3m_avg: null,
     g_t2_purchase_m0: null,
     h_t2_purchase_mtd: null,
-    t_pl5_purchase_m2: null,
-    u_pl5_purchase_m1: null,
-    v_pl5_purchase_m0_fcst: null,
+    t_category_purchase_m2: null,
+    u_category_purchase_m1: null,
+    v_category_purchase_m0_fcst: null,
     i_t2_purchase_mtg: null,
     j_opening_inventory: null,
     k_target_days: null,
     l_tolerance: null,
     q_actual_theoretical: null,
-    q_star_pl5_theoretical: null,
+    q_star_category_theoretical: null,
     w_mtg_allocate_qty: null,
     r_base_replenish: null,
     s_tolerance_replenish: null,
@@ -75,15 +75,15 @@ function emptyCalcExportMetrics() {
 
 async function loadSkippedCalcScopeRows(periodMonth: string, batchId?: string | null) {
   const periodDate = toPeriodDate(periodMonth);
-  const [lpPl5Rows, lpPl5UpnRows] = await Promise.all([
-    prisma.list_lp_pl5_status_monthly.findMany({
+  const [channelCategoryRows, channelCategorySkuRows] = await Promise.all([
+    prisma.list_channel_category_status_monthly.findMany({
       where: {
         period_month: periodDate,
         error_id: { not: null },
       },
       include: { error_catalog: true },
     }),
-    prisma.list_lp_pl5_upn_status_monthly.findMany({
+    prisma.list_channel_category_sku_status_monthly.findMany({
       where: {
         period_month: periodDate,
         error_id: { not: null },
@@ -92,36 +92,36 @@ async function loadSkippedCalcScopeRows(periodMonth: string, batchId?: string | 
     }),
   ]);
 
-  const upnRows = lpPl5UpnRows.map((row) => ({
+  const skuRows = channelCategorySkuRows.map((row) => ({
     batch_id: batchId ?? "",
-    dealerlpcode: row.lp_code,
-    lp_name: row.lp_name,
-    pl5_code: row.pl5_code,
-    pl5_name: row.pl5_name,
-    upn: row.upn,
+    dealer_channel_code: row.channel_code,
+    channel_name: row.channel_name,
+    category_code: row.category_code,
+    category_name: row.category_name,
+    sku: row.sku,
     ...emptyCalcExportMetrics(),
     is_error: true,
     error_message: row.error_catalog?.error_message ?? "",
     error_id: row.error_id,
   }));
 
-  const upnErrorKeys = new Set(lpPl5UpnRows.map((row) => `${row.lp_code}|${row.pl5_code}`));
-  const pl5Rows = lpPl5Rows
-    .filter((row) => !upnErrorKeys.has(`${row.lp_code}|${row.pl5_code}`))
+  const skuErrorKeys = new Set(channelCategorySkuRows.map((row) => `${row.channel_code}|${row.category_code}`));
+  const categoryRows = channelCategoryRows
+    .filter((row) => !skuErrorKeys.has(`${row.channel_code}|${row.category_code}`))
     .map((row) => ({
       batch_id: batchId ?? "",
-      dealerlpcode: row.lp_code,
-      lp_name: row.lp_name,
-      pl5_code: row.pl5_code,
-      pl5_name: row.pl5_name,
-      upn: "",
+      dealer_channel_code: row.channel_code,
+      channel_name: row.channel_name,
+      category_code: row.category_code,
+      category_name: row.category_name,
+      sku: "",
       ...emptyCalcExportMetrics(),
       is_error: true,
       error_message: row.error_catalog?.error_message ?? "",
       error_id: row.error_id,
     }));
 
-  return [...upnRows, ...pl5Rows];
+  return [...skuRows, ...categoryRows];
 }
 
 async function loadFullCalcResultExportRows(filters: ExportRequest) {
@@ -132,7 +132,7 @@ async function loadFullCalcResultExportRows(filters: ExportRequest) {
 
   const computedRows = filters.batchId
     ? await listCalcTraceRows(filters.batchId, {
-        pl5Code: filters.pl5Code,
+        categoryCode: filters.categoryCode,
         isError: filters.isError,
       })
     : await listLoadedCalcTraceRowsByPeriodMonth(periodMonth);
@@ -141,14 +141,14 @@ async function loadFullCalcResultExportRows(filters: ExportRequest) {
 
   return rows
     .filter((row) => {
-      if (filters.pl5Code && row.pl5_code !== filters.pl5Code) return false;
+      if (filters.categoryCode && row.category_code !== filters.categoryCode) return false;
       if (filters.isError && (row.is_error ? "Y" : "N") !== filters.isError) return false;
       return true;
     })
     .sort((a, b) =>
-      String(a.dealerlpcode ?? "").localeCompare(String(b.dealerlpcode ?? "")) ||
-      String(a.pl5_code ?? "").localeCompare(String(b.pl5_code ?? "")) ||
-      String(a.upn ?? "").localeCompare(String(b.upn ?? ""))
+      String(a.dealer_channel_code ?? "").localeCompare(String(b.dealer_channel_code ?? "")) ||
+      String(a.category_code ?? "").localeCompare(String(b.category_code ?? "")) ||
+      String(a.sku ?? "").localeCompare(String(b.sku ?? ""))
     );
 }
 
@@ -162,31 +162,31 @@ async function transformCalcResultRows(
     : filterPeriodMonth;
   if (!periodMonth) return rows;
 
-  const { lpNameByCode, pl5NameByCode } = await getCalcResultNameLookup(periodMonth);
+  const { channelNameByCode, categoryNameByCode } = await getCalcResultNameLookup(periodMonth);
 
   return rows.map((row) => {
-    const dealerlpcode = String(row.dealerlpcode ?? "");
-    const pl5Code = String(row.pl5_code ?? "");
+    const dealer_channel_code = String(row.dealer_channel_code ?? "");
+    const categoryCode = String(row.category_code ?? "");
 
     return {
       ...row,
-      lp_name: lpNameByCode[dealerlpcode] ?? row.lp_name ?? dealerlpcode,
-      pl5_name: pl5NameByCode[pl5Code] ?? row.pl5_name ?? pl5Code,
+      channel_name: channelNameByCode[dealer_channel_code] ?? row.channel_name ?? dealer_channel_code,
+      category_name: categoryNameByCode[categoryCode] ?? row.category_name ?? categoryCode,
     };
   });
 }
 
 export async function loadExportRows(filters: ExportRequest) {
   const fields =
-    filters.table === "calc_upn_split_result"
+    filters.table === "calc_sku_split_result"
       ? [...CALC_RESULT_EXPORT_FIELDS]
       : [...EXPORT_TABLE_FIELDS[filters.table]];
   const rawRows =
-    filters.table === "calc_upn_split_result"
+    filters.table === "calc_sku_split_result"
       ? await loadFullCalcResultExportRows(filters)
       : filters.scope === "loaded"
       ? await getLoadedExportRows(filters.table, filters.batchId, filters)
-      : filters.scBu ||
+      : filters.businessUnit ||
             filters.periodMonth ||
             filters.calendarDate ||
             filters.status ||
@@ -206,7 +206,7 @@ export async function loadExportRows(filters: ExportRequest) {
       ? applyLoadedScopeFilters(filters.table, rawRows as Record<string, unknown>[], filters)
       : (rawRows as Record<string, unknown>[]);
   const exportRows =
-    filters.table === "calc_upn_split_result"
+    filters.table === "calc_sku_split_result"
       ? await transformCalcResultRows(scopeFilteredRows, filters.batchId, filters.periodMonth)
       : scopeFilteredRows;
 

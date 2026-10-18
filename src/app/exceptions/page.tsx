@@ -140,7 +140,7 @@ export default async function ExceptionsPage() {
                       {group.skus.slice(0, 6).map((sku) => (
                         <Link
                           key={sku}
-                          href={`${resultBase}?upn=${encodeURIComponent(sku)}`}
+                          href={`${resultBase}?sku=${encodeURIComponent(sku)}`}
                           className="rounded-lg border bg-background px-2.5 py-1.5 text-xs font-medium transition hover:border-primary/30 hover:text-primary"
                         >
                           {sku}

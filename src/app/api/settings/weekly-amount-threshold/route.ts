@@ -8,14 +8,14 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const row = await upsertWeeklyAmountThreshold({
-      scBu: body?.scBu,
+      businessUnit: body?.businessUnit,
       overageThresholdPct: body?.overageThresholdPct,
       shortfallThresholdPct: body?.shortfallThresholdPct,
     });
     return NextResponse.json({
       success: true,
       rule: {
-        scBu: row.sc_bu,
+        businessUnit: row.business_unit,
         overageThresholdPct: Number(row.overage_threshold_pct),
         shortfallThresholdPct: Number(row.shortfall_threshold_pct),
       },
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const body = await request.json();
-    const deleted = await deleteWeeklyAmountThreshold(body?.scBu);
+    const deleted = await deleteWeeklyAmountThreshold(body?.businessUnit);
     return NextResponse.json({ success: true, deleted });
   } catch (error) {
     return NextResponse.json(

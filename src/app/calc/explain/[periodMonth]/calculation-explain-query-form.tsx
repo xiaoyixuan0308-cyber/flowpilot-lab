@@ -10,21 +10,21 @@ type Option = {
 };
 
 type OptionRow = {
-  lp: string;
-  pl5: string;
-  upn: string;
+  channel: string;
+  category: string;
+  sku: string;
 };
 
 interface CalculationExplainQueryFormProps {
   periodMonth: string;
-  lpValue: string;
-  pl5Value: string;
-  upnValue: string;
+  channelValue: string;
+  categoryValue: string;
+  skuValue: string;
   sourceValue: string;
-  lpOptions: Option[];
+  channelOptions: Option[];
   sourceOptions: Option[];
   optionRows: OptionRow[];
-  pl5NameByCode: Record<string, string>;
+  categoryNameByCode: Record<string, string>;
 }
 
 function buildOptions(values: string[], labelByValue?: Record<string, string>) {
@@ -35,52 +35,52 @@ function buildOptions(values: string[], labelByValue?: Record<string, string>) {
 
 export function CalculationExplainQueryForm({
   periodMonth,
-  lpValue,
-  pl5Value,
-  upnValue,
+  channelValue,
+  categoryValue,
+  skuValue,
   sourceValue,
-  lpOptions,
+  channelOptions,
   sourceOptions,
   optionRows,
-  pl5NameByCode,
+  categoryNameByCode,
 }: CalculationExplainQueryFormProps) {
-  const [lp, setLp] = useState(lpValue);
-  const [pl5, setPl5] = useState(pl5Value);
-  const [upn, setUpn] = useState(upnValue);
+  const [channel, setChannel] = useState(channelValue);
+  const [category, setCategory] = useState(categoryValue);
+  const [sku, setSku] = useState(skuValue);
 
-  const pl5Options = useMemo(() => {
-    const rows = lp ? optionRows.filter((row) => row.lp === lp) : optionRows;
+  const categoryOptions = useMemo(() => {
+    const rows = channel ? optionRows.filter((row) => row.channel === channel) : optionRows;
     return buildOptions(
-      rows.map((row) => row.pl5),
-      pl5NameByCode
+      rows.map((row) => row.category),
+      categoryNameByCode
     );
-  }, [lp, optionRows, pl5NameByCode]);
-  const effectivePl5 = pl5Options.some((option) => option.value === pl5) ? pl5 : "";
+  }, [channel, optionRows, categoryNameByCode]);
+  const effectiveCategory = categoryOptions.some((option) => option.value === category) ? category : "";
 
-  const upnOptions = useMemo(() => {
+  const skuOptions = useMemo(() => {
     const rows = optionRows.filter(
-      (row) => (!lp || row.lp === lp) && (!effectivePl5 || row.pl5 === effectivePl5)
+      (row) => (!channel || row.channel === channel) && (!effectiveCategory || row.category === effectiveCategory)
     );
-    return buildOptions(rows.map((row) => row.upn));
-  }, [lp, effectivePl5, optionRows]);
-  const effectiveUpn = upnOptions.some((option) => option.value === upn) ? upn : "";
+    return buildOptions(rows.map((row) => row.sku));
+  }, [channel, effectiveCategory, optionRows]);
+  const effectiveSku = skuOptions.some((option) => option.value === sku) ? sku : "";
 
   return (
     <form className="grid gap-3 md:grid-cols-[1fr_1fr_1fr_1fr_auto]" action={`/calc/explain/${periodMonth}`}>
       <label className="grid gap-1 text-sm">
-        <span className="text-muted-foreground">LP</span>
+        <span className="text-muted-foreground">渠道</span>
         <select
-          name="lp"
-          value={lp}
+          name="channel"
+          value={channel}
           onChange={(event) => {
-            setLp(event.target.value);
-            setPl5("");
-            setUpn("");
+            setChannel(event.target.value);
+            setCategory("");
+            setSku("");
           }}
           className="h-9 rounded-md border border-input bg-background px-3 text-sm"
         >
-          <option value="">全部LP</option>
-          {lpOptions.map((option) => (
+          <option value="">全部渠道</option>
+          {channelOptions.map((option) => (
             <option key={option.value || "__all__"} value={option.value}>
               {option.label}
             </option>
@@ -90,16 +90,16 @@ export function CalculationExplainQueryForm({
       <label className="grid gap-1 text-sm">
         <span className="text-muted-foreground">产品分类</span>
         <select
-          name="pl5"
-          value={effectivePl5}
+          name="category"
+          value={effectiveCategory}
           onChange={(event) => {
-            setPl5(event.target.value);
-            setUpn("");
+            setCategory(event.target.value);
+            setSku("");
           }}
           className="h-9 rounded-md border border-input bg-background px-3 text-sm"
         >
           <option value="">全部产品分类</option>
-          {pl5Options.map((option) => (
+          {categoryOptions.map((option) => (
             <option key={option.value || "__all__"} value={option.value}>
               {option.label}
             </option>
@@ -109,13 +109,13 @@ export function CalculationExplainQueryForm({
       <label className="grid gap-1 text-sm">
         <span className="text-muted-foreground">SKU</span>
         <select
-          name="upn"
-          value={effectiveUpn}
-          onChange={(event) => setUpn(event.target.value)}
+          name="sku"
+          value={effectiveSku}
+          onChange={(event) => setSku(event.target.value)}
           className="h-9 rounded-md border border-input bg-background px-3 text-sm"
         >
           <option value="">全部SKU</option>
-          {upnOptions.map((option) => (
+          {skuOptions.map((option) => (
             <option key={option.value || "__all__"} value={option.value}>
               {option.label}
             </option>

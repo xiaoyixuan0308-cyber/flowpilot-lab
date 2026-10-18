@@ -39,15 +39,15 @@ yarn-error.log*
 # local html snapshots / manual exports
 calc-results.html
 calc-result-detail.html
-lp-pl5-status.html
-lp-pl5-upn-status.html
+channel-category-status.html
+channel-category-sku-status.html
 outputs/
 
 # local test input/output artifacts
 test-artifacts/
-upn2-*.xlsx
-upn2-*.json
-upn2-dev-*.log
+sku2-*.xlsx
+sku2-*.json
+sku2-dev-*.log
 
 # env files
 .env

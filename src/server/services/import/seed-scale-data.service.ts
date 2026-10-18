@@ -4,55 +4,55 @@ import { buildScaleSeedFixtures, SCALE_PERIOD_MONTH } from "./seed-scale-fixture
 export async function seedScaleData(
   periodMonth: string = SCALE_PERIOD_MONTH,
   options?: {
-    lpCount?: number;
-    pl5Count?: number;
-    upnPerLpPl5?: number;
+    channelCount?: number;
+    categoryCount?: number;
+    skuPerChannelCategory?: number;
   },
 ) {
   const fixtures = buildScaleSeedFixtures(periodMonth, options);
 
   await prisma.$transaction(async (tx) => {
-    await tx.list_lp_pl5_upn_status_monthly.deleteMany();
-    await tx.bridge_pl5_upn_scope_monthly.deleteMany();
-    await tx.list_lp_pl5_status_monthly.deleteMany();
-    await tx.bridge_lp_pl5_scope_monthly.deleteMany();
-    await tx.calc_upn_split_trace.deleteMany();
-    await tx.calc_upn_split_result.deleteMany();
+    await tx.list_channel_category_sku_status_monthly.deleteMany();
+    await tx.bridge_category_sku_scope_monthly.deleteMany();
+    await tx.list_channel_category_status_monthly.deleteMany();
+    await tx.bridge_channel_category_scope_monthly.deleteMany();
+    await tx.calc_sku_split_trace.deleteMany();
+    await tx.calc_sku_split_result.deleteMany();
     await tx.calc_batch.deleteMany();
-    await tx.ods_upn_active_list.deleteMany();
-    await tx.ods_lp_pl5_allocate_monthly.deleteMany();
-    await tx.ods_fcst_t2_pl5_monthly.deleteMany();
-    await tx.ods_fcst_lp_pl5_monthly.deleteMany();
-    await tx.ods_dioh_dealer_upn.deleteMany();
-    await tx.ods_inventory_dealer_upn.deleteMany();
+    await tx.ods_sku_active_list.deleteMany();
+    await tx.ods_channel_category_allocate_monthly.deleteMany();
+    await tx.ods_fcst_t2_category_monthly.deleteMany();
+    await tx.ods_fcst_channel_category_monthly.deleteMany();
+    await tx.ods_dioh_dealer_sku.deleteMany();
+    await tx.ods_inventory_dealer_sku.deleteMany();
     await tx.ods_t2_purchase_monthly.deleteMany();
 
-    await tx.ods_fcst_lp_pl5_monthly.createMany({
-      data: fixtures.fcstLpPl5.map((row) => ({ sc_bu: "DEFAULT", ...row })),
+    await tx.ods_fcst_channel_category_monthly.createMany({
+      data: fixtures.fcstChannelCategory.map((row) => ({ business_unit: "DEFAULT", ...row })),
       skipDuplicates: true,
     });
-    await tx.ods_fcst_t2_pl5_monthly.createMany({
-      data: fixtures.fcstT2Pl5.map((row) => ({ sc_bu: "DEFAULT", ...row })),
+    await tx.ods_fcst_t2_category_monthly.createMany({
+      data: fixtures.fcstT2Category.map((row) => ({ business_unit: "DEFAULT", ...row })),
       skipDuplicates: true,
     });
-    await tx.ods_lp_pl5_allocate_monthly.createMany({
+    await tx.ods_channel_category_allocate_monthly.createMany({
       data: fixtures.allocations,
       skipDuplicates: true,
     });
-    await tx.ods_upn_active_list.createMany({
-      data: fixtures.activeUpns,
+    await tx.ods_sku_active_list.createMany({
+      data: fixtures.activeSkus,
       skipDuplicates: true,
     });
-    await tx.ods_inventory_dealer_upn.createMany({
+    await tx.ods_inventory_dealer_sku.createMany({
       data: fixtures.inventories,
       skipDuplicates: true,
     });
-    await tx.ods_dioh_dealer_upn.createMany({
+    await tx.ods_dioh_dealer_sku.createMany({
       data: fixtures.diohTargets,
       skipDuplicates: true,
     });
     await tx.ods_t2_purchase_monthly.createMany({
-      data: fixtures.t2Purchases.map((row) => ({ sc_bu: "DEFAULT", ...row })),
+      data: fixtures.t2Purchases.map((row) => ({ business_unit: "DEFAULT", ...row })),
       skipDuplicates: true,
     });
   });
@@ -61,9 +61,9 @@ export async function seedScaleData(
     success: true,
     periodMonth,
     options: {
-      lpCount: options?.lpCount ?? 3,
-      pl5Count: options?.pl5Count ?? 4,
-      upnPerLpPl5: options?.upnPerLpPl5 ?? 3,
+      channelCount: options?.channelCount ?? 3,
+      categoryCount: options?.categoryCount ?? 4,
+      skuPerChannelCategory: options?.skuPerChannelCategory ?? 3,
     },
     message: "规模回归测试数据已写入 ODS 表。",
   };

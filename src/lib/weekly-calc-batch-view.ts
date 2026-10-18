@@ -4,7 +4,7 @@ export interface WeeklyCalcBatchSummaryLike {
   calendar_date: Date;
   status: string;
   total_rows: number;
-  total_upns: number;
+  total_skus: number;
   month_le_amount?: unknown;
   week_pattern_gap_pct?: unknown;
   overage_threshold_pct?: unknown;
@@ -22,7 +22,7 @@ export type WeeklyCalcBatchTableRow = Record<string, unknown> & {
   calendar_date: string;
   status: string;
   total_rows: string;
-  total_upns: string;
+  total_skus: string;
   month_le_amount: string;
   week_pattern_gap_pct: string;
   overage_threshold_pct: string;
@@ -92,7 +92,7 @@ export function buildWeeklyCalcBatchTableRows(
       calendar_date: baselineDate,
       status: baseline.status,
       total_rows: String(baseline.total_rows),
-      total_upns: String(baseline.total_upns),
+      total_skus: String(baseline.total_skus),
       month_le_amount: formatMetric(baseline.month_le_amount),
       week_pattern_gap_pct: formatMetric(baseline.week_pattern_gap_pct),
       overage_threshold_pct: formatMetric(baseline.overage_threshold_pct),

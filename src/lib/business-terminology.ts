@@ -10,22 +10,18 @@ const terminologyRules: Array<[RegExp, string]> = [
   [/P\s*→\s*Q\s*→\s*R\s*→\s*S/gi, "补货缺口→理论补货→基础补货→调剂补货"],
   [/Pattern\s*Gap/gi, "目标差额"],
   [/DIOH/gi, "库存天数"],
-  [/LP-PL5-UPN/gi, "渠道-产品分类-SKU"],
-  [/LP-PL5/gi, "渠道-产品分类"],
-  [/PL5-UPN/gi, "产品分类-SKU"],
-  [/Dealer\s+UPN/gi, "经销商SKU"],
-  [/SC[\s_]*BU|SCBU/gi, "业务单元"],
-  [/\bBSC\b/gi, "中央仓"],
+  [/Dealer\s+SKU/gi, "经销商SKU"],
+  [/\bBusiness\s*Unit\b/gi, "业务单元"],
+  [/\bCentral\s*Warehouse\b/gi, "中央仓"],
   [/\bDealer\b/gi, "经销商"],
   [/\bT2\b/gi, "二级渠道"],
-  [/\bUPN\b/gi, "SKU"],
-  [/\bPL5\b/gi, "产品分类"],
-  [/\bLP\b/gi, "渠道"],
+  [/\bCategory\b/gi, "产品分类"],
+  [/\bChannel\b/gi, "渠道"],
 ];
 
 /**
- * 将当前医疗器械模板的技术维度名称转换成跨行业业务术语。
- * 数据库字段、URL 和计算公式仍使用原始编码，避免影响既有计算链路。
+ * 将计算口径中的英文缩写（DIOH、T2、计算阶段代号等）转换成通用业务术语，
+ * 便于在页面上展示。数据库字段、URL 和计算公式保持英文标识。
  */
 export function toBusinessTerm(value: string): string {
   return terminologyRules.reduce(

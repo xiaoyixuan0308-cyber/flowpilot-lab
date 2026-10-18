@@ -38,7 +38,7 @@ export async function GET(request: Request) {
     styleHeader(worksheet.getRow(1));
   }
 
-  const filename = targetDefinition ? `${targetDefinition.label}.xlsx` : "DSC-统一整包模板.xlsx";
+  const filename = targetDefinition ? `${targetDefinition.label}.xlsx` : "APP-统一整包模板.xlsx";
   const buffer = await workbook.xlsx.writeBuffer();
 
   return new NextResponse(Buffer.from(buffer), {

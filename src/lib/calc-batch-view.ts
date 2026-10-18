@@ -2,8 +2,8 @@ export interface CalcBatchSummaryLike {
   id: string;
   period_month: Date;
   status: string;
-  total_upns: number;
-  error_upns: number;
+  total_skus: number;
+  error_skus: number;
   calculated_at: Date | null;
   created_at?: Date | null;
 }
@@ -15,8 +15,8 @@ export type CalcBatchTableRow = Record<string, unknown> & {
   trace_href: string;
   period_month: string;
   status: string;
-  total_upns: string;
-  error_upns: string;
+  total_skus: string;
+  error_skus: string;
   calculated_at: string;
 };
 
@@ -79,8 +79,8 @@ export function buildCalcBatchTableRows(
       trace_href: `/calc/trace/${baselineMonth}`,
       period_month: baselineMonth,
       status: baseline.status,
-      total_upns: String(baseline.total_upns),
-      error_upns: String(baseline.error_upns),
+      total_skus: String(baseline.total_skus),
+      error_skus: String(baseline.error_skus),
       calculated_at: formatDateTimeUtc8(baseline.calculated_at),
     };
   });
