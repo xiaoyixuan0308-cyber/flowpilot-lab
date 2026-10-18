@@ -1,4 +1,4 @@
-import { buildChannelSkuKey, compareDecimal, multiply10 } from "../weekly-sku-split.helpers";
+import { buildChannelSkuKey, compareDecimal, isPrimaryChannelDealerType, multiply10 } from "../weekly-sku-split.helpers";
 import type { WeeklyP7Row, WeeklyP8Row, WeeklyPurchasePriceRow } from "../weekly-sku-split.types";
 
 export function attachSuggestionAmountMetrics(
@@ -8,7 +8,7 @@ export function attachSuggestionAmountMetrics(
   const priceByChannelSku = new Map<string, number | null>();
 
   for (const row of purchasePriceRows) {
-    if (row.dealerType.trim().toUpperCase() !== "CHANNEL") continue;
+    if (!isPrimaryChannelDealerType(row.dealerType)) continue;
     const unitPrice =
       row.centralWarehouseStdSellPrice !== null && compareDecimal(row.centralWarehouseStdSellPrice, 0) > 0
         ? row.centralWarehouseStdSellPrice

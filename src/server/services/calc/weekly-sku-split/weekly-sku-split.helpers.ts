@@ -31,6 +31,16 @@ export function clampMinZero(value: number) {
   return max10(value, 0);
 }
 
+/**
+ * 一级渠道（直供渠道）的经销商类型。导入时类型会转为大写，
+ * 演示数据和业务模板中使用中文标签“一级渠道”，系统编码为 CHANNEL。
+ */
+const PRIMARY_CHANNEL_DEALER_TYPES = new Set(["CHANNEL", "一级渠道"]);
+
+export function isPrimaryChannelDealerType(value: string | null | undefined) {
+  return PRIMARY_CHANNEL_DEALER_TYPES.has((value ?? "").trim().toUpperCase());
+}
+
 export function buildChannelSkuKey(channelCode: string, sku: string) {
   return `${channelCode}||${sku}`;
 }

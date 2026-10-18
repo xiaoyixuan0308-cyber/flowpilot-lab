@@ -3,6 +3,7 @@ import {
   buildChannelSkuKey,
   buildSkuKey,
   indexBySum,
+  isPrimaryChannelDealerType,
   subtract10,
 } from "../weekly-sku-split.helpers";
 import type { WeeklyDealerDnRow, WeeklyOpenOrderRow, WeeklyP2Row, WeeklyP3Row } from "../weekly-sku-split.types";
@@ -20,10 +21,6 @@ function isNonOrType(value: string | null | undefined) {
   return normalized.length > 0 && normalized !== "OR";
 }
 
-function isChannelDealerType(value: string | null | undefined) {
-  return (value ?? "").trim().toUpperCase() === "CHANNEL";
-}
-
 function buildBuChannelSkuKey(businessUnit: string, channelCode: string, sku: string) {
   return `${businessUnit}||${buildChannelSkuKey(channelCode, sku)}`;
 }
@@ -38,7 +35,7 @@ export function attachDeliveryOpenOrderMetrics(
   openOrderRows: WeeklyOpenOrderRow[]
 ): WeeklyP3Row[] {
   const channelSkuDelivered = indexBySum(
-    dnRows.filter((row) => row.soldToPt && row.material && isChannelDealerType(row.dealerType)),
+    dnRows.filter((row) => row.soldToPt && row.material && isPrimaryChannelDealerType(row.dealerType)),
     (row) => buildBuChannelSkuKey(row.businessUnit, row.soldToPt!, row.material!),
     (row) => row.deliveryQty
   );
@@ -49,7 +46,7 @@ export function attachDeliveryOpenOrderMetrics(
   );
   const channelSkuOr = indexBySum(
     openOrderRows.filter(
-      (row) => row.customer && row.material && isChannelDealerType(row.dealerType) && isOrType(row.dctp)
+      (row) => row.customer && row.material && isPrimaryChannelDealerType(row.dealerType) && isOrType(row.dctp)
     ),
     (row) => buildBuChannelSkuKey(row.businessUnit, row.customer!, row.material!),
     (row) => row.openQty
@@ -60,7 +57,7 @@ export function attachDeliveryOpenOrderMetrics(
     (row) => row.openQty
   );
   const channelDealerSkuOr = indexBySum(
-    openOrderRows.filter((row) => row.material && isChannelDealerType(row.dealerType) && isOrType(row.dctp)),
+    openOrderRows.filter((row) => row.material && isPrimaryChannelDealerType(row.dealerType) && isOrType(row.dctp)),
     (row) => buildBuSkuKey(row.businessUnit, row.material!),
     (row) => row.openQty
   );
@@ -69,7 +66,7 @@ export function attachDeliveryOpenOrderMetrics(
       (row) =>
         row.customer &&
         row.material &&
-        isChannelDealerType(row.dealerType) &&
+        isPrimaryChannelDealerType(row.dealerType) &&
         isNonOrType(row.dctp)
     ),
     (row) => buildBuChannelSkuKey(row.businessUnit, row.customer!, row.material!),
@@ -82,7 +79,7 @@ export function attachDeliveryOpenOrderMetrics(
   );
   const channelDealerSkuNonOr = indexBySum(
     openOrderRows.filter(
-      (row) => row.material && isChannelDealerType(row.dealerType) && isNonOrType(row.dctp)
+      (row) => row.material && isPrimaryChannelDealerType(row.dealerType) && isNonOrType(row.dctp)
     ),
     (row) => buildBuSkuKey(row.businessUnit, row.material!),
     (row) => row.openQty
