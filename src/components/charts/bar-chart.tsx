@@ -27,6 +27,8 @@ interface BarChartProps {
   layout?: "vertical" | "horizontal";
   showLegend?: boolean;
   minBarWidth?: number;
+  /** Allow horizontal scrolling for many bars; when false the chart always fits its container. */
+  scrollable?: boolean;
 }
 
 const BAR_GAP = 8;
@@ -40,6 +42,8 @@ function BarChartContent({
   minBarWidth = 40,
 }: BarChartProps) {
   const isVertical = layout === "vertical";
+  const longestLabel = Math.max(0, ...data.map((row) => String(row[xKey] ?? "").length));
+  const rotateLabels = data.length > 10 || (data.length > 3 && longestLabel > 6);
 
   return (
     <>
@@ -51,9 +55,9 @@ function BarChartContent({
         tickLine={false}
         axisLine={{ stroke: "var(--border)" }}
         interval={0}
-        angle={data.length > 10 ? -45 : 0}
-        textAnchor={data.length > 10 ? "end" : "middle"}
-        height={data.length > 10 ? 80 : 30}
+        angle={rotateLabels ? -35 : 0}
+        textAnchor={rotateLabels ? "end" : "middle"}
+        height={rotateLabels ? Math.min(110, 30 + longestLabel * 7) : 30}
       />
       <YAxis
         type={isVertical ? "category" : "number"}
@@ -70,7 +74,7 @@ function BarChartContent({
           fontSize: 13,
         }}
       />
-      {showLegend && <Legend />}
+      {showLegend && <Legend iconType="circle" iconSize={8} wrapperStyle={{ paddingTop: 8, fontSize: 13 }} />}
       {series.map((s, i) => (
         <Bar
           key={s.key}
@@ -87,11 +91,11 @@ function BarChartContent({
 }
 
 export function BarChart(props: BarChartProps) {
-  const { data, series, height = 280, minBarWidth = 40 } = props;
+  const { data, series, height = 280, minBarWidth = 40, scrollable = true } = props;
 
   const totalBars = data.length * series.length;
   const chartWidth = Math.max(totalBars * (minBarWidth + BAR_GAP) + 60, 300);
-  const needScroll = chartWidth > 600;
+  const needScroll = scrollable && chartWidth > 600;
 
   if (needScroll) {
     return (

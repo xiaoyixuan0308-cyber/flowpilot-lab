@@ -93,11 +93,19 @@ interface PatternGapData {
   };
 }
 
+interface DistributionItem {
+  name: string;
+  value: number;
+}
+
 interface Props {
   periodMonths: string[];
   calendarDates: string[];
   latestPeriodMonth: string | null;
   latestCalendarDate: string | null;
+  riskDistribution: DistributionItem[];
+  riskSkuCount: number;
+  weeklyInventoryStatus: DistributionItem[];
 }
 
 /* ---------- helpers ---------- */
@@ -109,6 +117,19 @@ function topNSeries(series: Record<string, number[]>, n: number) {
   }));
   totals.sort((a, b) => b.total - a.total);
   return new Set(totals.slice(0, n).map((t) => t.key));
+}
+
+/** Sum stage quantities across channels so each SKU appears once, sorted by the final stage. */
+function aggregateBySku<T extends { sku: string }>(rows: T[], keys: (keyof T & string)[], sortKey: keyof T & string) {
+  const bySku = new Map<string, Record<string, number | string>>();
+  for (const row of rows) {
+    const current = bySku.get(row.sku) ?? { sku: row.sku, ...Object.fromEntries(keys.map((k) => [k, 0])) };
+    for (const key of keys) current[key] = (current[key] as number) + Number(row[key] ?? 0);
+    bySku.set(row.sku, current);
+  }
+  return Array.from(bySku.values())
+    .map((row) => Object.fromEntries(Object.entries(row).map(([k, v]) => [k, typeof v === "number" ? Math.round(v * 100) / 100 : v])))
+    .sort((a, b) => Number(b[sortKey]) - Number(a[sortKey]));
 }
 
 const dashboardRequestCache = new Map<string, Promise<unknown>>();
@@ -136,17 +157,17 @@ async function fetchDashboardJson(url: string, refresh = false) {
 /* ---------- chart column indices ---------- */
 
 const PIPELINE_BAR_SERIES: BarChartSeries[] = [
-  { key: "p", name: "P 理论补货" },
-  { key: "q", name: "Q 实际理论" },
-  { key: "r", name: "R 基础补货" },
-  { key: "s", name: "S 容差补货" },
+  { key: "p", name: "补货缺口 (P)" },
+  { key: "q", name: "理论补货 (Q)" },
+  { key: "r", name: "基础补货 (R)" },
+  { key: "s", name: "调剂补货 (S)" },
 ];
 
 const WEEKLY_PIPELINE_BAR_SERIES: BarChartSeries[] = [
-  { key: "ad", name: "AD 建议量" },
-  { key: "sa", name: "SA 系统调整" },
-  { key: "ra", name: "RA 缺口补差" },
-  { key: "rra", name: "RRA 最终量" },
+  { key: "ad", name: "建议补货 (AD)" },
+  { key: "sa", name: "缩减调整 (SA)" },
+  { key: "ra", name: "金额补差 (RA)" },
+  { key: "rra", name: "最终发货 (RRA)" },
 ];
 
 /* ---------- anomaly table columns ---------- */
@@ -189,6 +210,9 @@ export function DashboardClient({
   calendarDates,
   latestPeriodMonth,
   latestCalendarDate,
+  riskDistribution,
+  riskSkuCount,
+  weeklyInventoryStatus,
 }: Props) {
   const [periodMonth, setPeriodMonth] = useState(latestPeriodMonth ?? "");
   const [calendarDate, setCalendarDate] = useState(latestCalendarDate ?? "");
@@ -311,6 +335,24 @@ export function DashboardClient({
     }));
   };
 
+  /** Trend chart that falls back to a bar comparison when only one period exists. */
+  const renderTrend = (data: OdsTrendData | null, valueName: string, topN = 5) => {
+    const lineData = buildLineData(data, topN);
+    if (!data || !lineData) return null;
+    if (data.periods.length === 1) {
+      const top = topNSeries(data.series, topN);
+      const bars = Array.from(top).map((key) => ({
+        name: data.seriesLabels?.[key] || key,
+        value: data.series[key]?.[0] ?? 0,
+      }));
+      return <BarChart data={bars} xKey="name" series={[{ key: "value", name: `${data.periods[0]} ${valueName}` }]} height={280} showLegend />;
+    }
+    return <LineChart data={lineData} xKey="period" series={buildLineSeries(data, topN)} height={280} />;
+  };
+
+  const monthlyPipelineData = aggregateBySku(pipeline, ["p", "q", "r", "s"], "s");
+  const weeklyPipelineData = aggregateBySku(weeklyPipeline, ["ad", "sa", "ra", "rra"], "rra");
+
   /* ---------- KPI cards ---------- */
 
   const kpiItems = [
@@ -330,20 +372,18 @@ export function DashboardClient({
     {
       label: "最终建议金额",
       value: patternGap?.latest
-        ? patternGap.latest.finalAmountTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })
+        ? `${patternGap.latest.finalAmountTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${patternGap.latest.currency}`
         : "-",
     },
     { label: "错误率", value: errors ? `${errors.errorRate.rate}%` : "-" },
     { label: "调整后库存天数", value: summary?.avgAdjustedDioh ?? "-" },
   ];
 
-  /* ---------- error donut ---------- */
+  /* ---------- distribution donuts ---------- */
 
-  const errorDonutData: DonutChartSegment[] =
-    errors?.distribution.map((d) => ({
-      name: d.message.length > 20 ? d.message.slice(0, 20) + "..." : d.message,
-      value: d.count,
-    })) ?? [];
+  const riskDonutData: DonutChartSegment[] = riskDistribution;
+  const weeklyStatusDonutData: DonutChartSegment[] = weeklyInventoryStatus;
+  const weeklyStatusTotal = weeklyInventoryStatus.reduce((sum, item) => sum + item.value, 0);
 
   const isAllEmpty =
     !loading &&
@@ -448,16 +488,16 @@ export function DashboardClient({
           <SectionCard title="月度规划输入" description="月度补货规划相关的基础数据趋势">
             <div className="grid gap-6 md:grid-cols-2">
               <ChartCard title="T2采购历史趋势" dim="产品分类" description="按月汇总采购量，Top 5" isLoading={loading} isEmpty={!t2Data}>
-                {buildLineData(t2Data) && <LineChart data={buildLineData(t2Data)!} xKey="period" series={buildLineSeries(t2Data)} height={280} />}
+                {renderTrend(t2Data, "采购量")}
               </ChartCard>
               <ChartCard title="库存变化趋势" dim="渠道" description="按月汇总经销商库存量，Top 5" isLoading={loading} isEmpty={!invData}>
-                {buildLineData(invData) && <LineChart data={buildLineData(invData)!} xKey="period" series={buildLineSeries(invData)} height={280} />}
+                {renderTrend(invData, "库存量")}
               </ChartCard>
               <ChartCard title="渠道-产品分类预测趋势" dim="产品分类" description="按月汇总预测数量，Top 5" isLoading={loading} isEmpty={!fcstChannelData}>
-                {buildLineData(fcstChannelData) && <LineChart data={buildLineData(fcstChannelData)!} xKey="period" series={buildLineSeries(fcstChannelData)} height={280} />}
+                {renderTrend(fcstChannelData, "预测量")}
               </ChartCard>
               <ChartCard title="T2-产品分类预测趋势" dim="产品分类" description="按月汇总预测数量，Top 5" isLoading={loading} isEmpty={!fcstT2Data}>
-                {buildLineData(fcstT2Data) && <LineChart data={buildLineData(fcstT2Data)!} xKey="period" series={buildLineSeries(fcstT2Data)} height={280} />}
+                {renderTrend(fcstT2Data, "预测量")}
               </ChartCard>
             </div>
           </SectionCard>
@@ -476,7 +516,7 @@ export function DashboardClient({
                 )}
               </ChartCard>
               <ChartCard title="经销商发货记录" dim="SKU" description="按日期汇总发货量，Top 5" isLoading={loading} isEmpty={!dnData}>
-                {buildLineData(dnData) && <LineChart data={buildLineData(dnData)!} xKey="period" series={buildLineSeries(dnData)} height={280} />}
+                {renderTrend(dnData, "发货量")}
               </ChartCard>
               <ChartCard title="经销商未清订单" dim="SKU" description="按SKU汇总未清订单量" isLoading={loading} isEmpty={!openOrderData || openOrderData.data.length === 0}>
                 {openOrderData && openOrderData.data.length > 0 && <BarChart data={openOrderData.data.map((d) => ({ name: d.name, value: d.value }))} xKey="name" series={[{ key: "value", name: "未清订单量" }]} />}
@@ -485,7 +525,7 @@ export function DashboardClient({
                 {centralWarehouseInvData && centralWarehouseInvData.data.length > 0 && <BarChart data={centralWarehouseInvData.data.map((d) => ({ name: d.name, value: d.value }))} xKey="name" series={[{ key: "value", name: "库存量" }]} />}
               </ChartCard>
               <ChartCard title="中央仓在途库存" dim="SKU" description="按日期汇总在途库存量，Top 5" isLoading={loading} isEmpty={!centralWarehouseTransitData}>
-                {buildLineData(centralWarehouseTransitData) && <LineChart data={buildLineData(centralWarehouseTransitData)!} xKey="period" series={buildLineSeries(centralWarehouseTransitData)} height={280} />}
+                {renderTrend(centralWarehouseTransitData, "在途量")}
               </ChartCard>
               <ChartCard title="安全库存" dim="SKU" description="按SKU安全库存量" isLoading={loading} isEmpty={!safetyStockData || safetyStockData.data.length === 0}>
                 {safetyStockData && safetyStockData.data.length > 0 && <BarChart data={safetyStockData.data.map((d) => ({ name: d.name, value: d.value }))} xKey="name" series={[{ key: "value", name: "安全库存量" }]} />}
@@ -499,21 +539,35 @@ export function DashboardClient({
           {/* ======== 结果 ======== */}
           <SectionCard title="结果" description="计算结果、补货管线与异常分析">
             <div className="space-y-6">
-              <SectionCard title="月度补货管线" dim="产品" description="补货缺口、理论补货、基础补货与调剂补货的阶段数量对比，按最终调剂补货量降序">
+              <SectionCard title="月度补货管线" dim="SKU" description="各 SKU 汇总全部渠道后，补货缺口、理论补货、基础补货与调剂补货的数量对比，按调剂补货量降序">
                 {pipeline.length > 0 && (
-                  <BarChart data={pipeline.map((r) => ({ label: `${r.sku}\n${r.categoryCode}`, sku: r.sku, p: r.p, q: r.q, r: r.r, s: r.s }))} xKey="sku" series={PIPELINE_BAR_SERIES} height={350} minBarWidth={18} />
+                  <BarChart data={monthlyPipelineData} xKey="sku" series={PIPELINE_BAR_SERIES} height={400} minBarWidth={12} showLegend scrollable={false} />
                 )}
               </SectionCard>
-              <SectionCard title="周配货管线" dim="产品" description="建议补货、缩减调整、金额补差与最终发货的阶段数量对比，按最终发货量降序">
+              <SectionCard title="周配货管线" dim="SKU" description="各 SKU 汇总全部渠道后，建议补货、缩减调整、金额补差与最终发货的数量对比，按最终发货量降序">
                 {weeklyPipeline.length > 0 && (
-                  <BarChart data={weeklyPipeline.map((r) => ({ label: `${r.sku}\n${r.categoryCode}`, sku: r.sku, ad: r.ad, sa: r.sa, ra: r.ra, rra: r.rra }))} xKey="sku" series={WEEKLY_PIPELINE_BAR_SERIES} height={350} minBarWidth={18} />
+                  <BarChart data={weeklyPipelineData} xKey="sku" series={WEEKLY_PIPELINE_BAR_SERIES} height={400} minBarWidth={12} showLegend scrollable={false} />
                 )}
               </SectionCard>
               <SectionCard
                 title="目标差额查询与统计"
                 description={`${timeSpan === "week" ? "按周" : "按月"}展示目标待发金额、建议金额与最终差额`}
               >
-                {patternGap && patternGap.data.length > 0 ? (
+                {patternGap && patternGap.data.length === 1 ? (
+                  <BarChart
+                    data={[
+                      { name: "周配额目标金额", value: Math.round(patternGap.data[0].weekPatternAmount) },
+                      { name: "累计实际金额", value: Math.round(patternGap.data[0].actualAmount) },
+                      { name: "建议金额", value: Math.round(patternGap.data[0].suggestedAmountTotal) },
+                      { name: "最终建议金额", value: Math.round(patternGap.data[0].finalAmountTotal) },
+                      { name: "最终目标差额", value: Math.round(patternGap.data[0].finalPatternGapAmount) },
+                    ]}
+                    xKey="name"
+                    series={[{ key: "value", name: `${patternGap.data[0].period} 金额（${patternGap.data[0].currency}）` }]}
+                    height={320}
+                    showLegend
+                  />
+                ) : patternGap && patternGap.data.length > 0 ? (
                   <LineChart
                     data={patternGap.data.map((row) => ({
                       period: row.period,
@@ -536,15 +590,19 @@ export function DashboardClient({
                 )}
               </SectionCard>
               <div className="grid gap-6 md:grid-cols-2">
-                <ChartCard title="月度异常占比" description={errorDonutData.length === 0 ? "无异常" : undefined} isLoading={loading} isEmpty={false}>
-                  {errorDonutData.length > 0 ? (
-                    <DonutChart data={errorDonutData} height={280} centerLabel={String(errors?.errorRate.errors ?? 0)} />
+                <ChartCard title="风险类型分布" description={`与异常中心同一口径；共 ${riskSkuCount} 个 SKU 触发风险，同一 SKU 可能触发多类`} isLoading={false} isEmpty={false}>
+                  {riskDonutData.length > 0 ? (
+                    <DonutChart data={riskDonutData} height={280} centerLabel={String(riskSkuCount)} />
                   ) : (
-                    <div className="flex items-center justify-center text-sm text-muted-foreground" style={{ height: 280 }}>无异常</div>
+                    <div className="flex items-center justify-center text-sm text-muted-foreground" style={{ height: 280 }}>暂无风险</div>
                   )}
                 </ChartCard>
-                <ChartCard title="周度异常占比" description="无异常" isLoading={loading} isEmpty={false}>
-                  <div className="flex items-center justify-center text-sm text-muted-foreground" style={{ height: 280 }}>无异常</div>
+                <ChartCard title="周度库存状态" description="最新周度计算中，渠道-SKU 行的中央仓可发库存状态" isLoading={false} isEmpty={false}>
+                  {weeklyStatusDonutData.length > 0 ? (
+                    <DonutChart data={weeklyStatusDonutData} height={280} centerLabel={String(weeklyStatusTotal)} />
+                  ) : (
+                    <div className="flex items-center justify-center text-sm text-muted-foreground" style={{ height: 280 }}>暂无周度计算结果</div>
+                  )}
                 </ChartCard>
               </div>
               {errors && errors.diohWarnings.length > 0 && (

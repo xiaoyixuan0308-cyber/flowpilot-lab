@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+/** Sortable YYYY-MM-DD key for DATE columns (Prisma returns them as Date objects). */
+function toDateKey(value: Date | string | null | undefined) {
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  return String(value ?? "").slice(0, 10);
+}
+
 type TrendType =
   | "t2-purchase"
   | "inventory"
@@ -246,7 +252,7 @@ export async function GET(request: NextRequest) {
         const seriesMap = new Map<string, Map<string, number>>();
 
         for (const row of rows) {
-          const period = String(row.created_on).slice(0, 10);
+          const period = toDateKey(row.created_on);
           periods.add(period);
           const key = row.material || "unknown";
           if (!seriesMap.has(key)) seriesMap.set(key, new Map());
@@ -304,7 +310,7 @@ export async function GET(request: NextRequest) {
         const seriesMap = new Map<string, Map<string, number>>();
 
         for (const row of rows) {
-          const period = String(row.forecast_date).slice(0, 10);
+          const period = toDateKey(row.forecast_date);
           periods.add(period);
           const key = row.material || "unknown";
           if (!seriesMap.has(key)) seriesMap.set(key, new Map());
