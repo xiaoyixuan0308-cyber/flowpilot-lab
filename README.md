@@ -26,6 +26,37 @@ Replenishment planning often lives in a chain of spreadsheets: purchase history 
 | **Analytics dashboard** | KPIs for weekly target, gap and final amount; trends for purchases, inventory, forecasts, deliveries and in-transit stock; per-SKU monthly and weekly pipelines; risk-type and inventory-status distributions. Month/week filters. | Planners see patterns and where quantities change, not just tables. |
 | **Workspace** | Supply chain cockpit, multi-tab workspace and global page search. | Fast switching between data, results and traces. |
 
+## How it works
+
+Monthly planning turns demand, inventory and quotas into replenishment suggestions; its result becomes the monthly quota for weekly execution, which works within available stock and the weekly budget.
+
+```mermaid
+flowchart TB
+    IN1["<b>Monthly inputs</b><br/>purchase history · channel & tier-2 forecasts · channel inventory · target inventory days · category quotas"]
+    subgraph M["Monthly planning"]
+        direction LR
+        m1["Demand<br/>baseline"] --> m2["Target<br/>inventory"] --> m3["Replenishment<br/>gap (P)"] --> m4["Theoretical (Q)<br/>within category quota"] --> m5["Base<br/>replenishment (R)"] --> m6["Tolerance-<br/>adjusted (S)"]
+    end
+    IN2["<b>Weekly inputs</b><br/>central warehouse stock & in-transit · safety stock · deliveries & open orders · prices · weekly calendar & budget"]
+    subgraph W["Weekly execution"]
+        direction LR
+        w1["Week<br/>target"] --> w2["Available<br/>inventory"] --> w3["Initial<br/>suggestion (AD)"] --> w4["Amount vs<br/>budget"] --> w5["Over-budget<br/>reduction (SA)"] --> w6["Shortfall<br/>top-up (RA)"] --> w7["Final<br/>shipment (RRA)"]
+    end
+    OUT["<b>Outputs</b><br/>monthly & weekly suggestions (Excel) · exception center (6 risk rules) · per-SKU calculation trace · analytics dashboard"]
+    IN1 --> M
+    M -->|"monthly quota"| W
+    IN2 --> W
+    W --> OUT
+    classDef input fill:#f4f4f5,stroke:#9ca3af,color:#374151
+    classDef step fill:#eef4ff,stroke:#2a78d6,color:#10233f
+    classDef out fill:#e8f6ee,stroke:#198754,color:#0f3d24
+    class IN1,IN2 input
+    class m1,m2,m3,m4,m5,m6,w1,w2,w3,w4,w5,w6,w7 step
+    class OUT out
+```
+
+Every stage's formulas, branches (stock shortfall, budget thresholds, constraints), error codes and exception rules are in [docs/calculation-logic.md](docs/calculation-logic.md).
+
 ## Screenshots
 
 ### Analytics dashboard
@@ -154,6 +185,37 @@ FlowPilot Lab 是一个面向供应链计划与履约场景的全栈演示平台
 - **计算追溯**：所有公式都用业务语言展示；任选一个渠道-产品分类-SKU，都能逐步查看输入值、快照值、重算值和差异。
 - **数据可视化看板**：周目标金额、目标差额、最终建议金额等 KPI；采购、库存、预测、发货和在途趋势；按 SKU 汇总的月度和周度补货管线；风险类型和库存状态分布。支持按月、按周筛选。
 - **工作台**：供应链驾驶舱、多页签工作区和全局页面搜索。
+
+### 计算链路
+
+月度规划根据需求、库存和配额生成补货建议，结果作为周度执行的月配额；周度执行在可发库存和周预算范围内形成最终发货建议。
+
+```mermaid
+flowchart TB
+    IN1["<b>月度输入</b><br/>采购历史 · 渠道与二级渠道预测 · 渠道库存 · 目标库存天数 · 产品分类配额"]
+    subgraph M["月度补货规划"]
+        direction LR
+        m1["需求<br/>基线"] --> m2["目标<br/>库存"] --> m3["补货<br/>缺口 (P)"] --> m4["理论补货 (Q)<br/>受分类配额限制"] --> m5["基础<br/>补货 (R)"] --> m6["调剂<br/>补货 (S)"]
+    end
+    IN2["<b>周度输入</b><br/>中央仓库存与在途 · 安全库存 · 发货与未清订单 · 单价 · 周历与周预算"]
+    subgraph W["周度配货执行"]
+        direction LR
+        w1["周<br/>目标"] --> w2["可发<br/>库存"] --> w3["初始<br/>建议 (AD)"] --> w4["金额对比<br/>预算"] --> w5["超额<br/>缩减 (SA)"] --> w6["缺额<br/>补差 (RA)"] --> w7["最终<br/>发货 (RRA)"]
+    end
+    OUT["<b>输出</b><br/>月度与周度建议（Excel）· 异常中心（6 条规则）· 单 SKU 计算追溯 · 数据看板"]
+    IN1 --> M
+    M -->|"月配额"| W
+    IN2 --> W
+    W --> OUT
+    classDef input fill:#f4f4f5,stroke:#9ca3af,color:#374151
+    classDef step fill:#eef4ff,stroke:#2a78d6,color:#10233f
+    classDef out fill:#e8f6ee,stroke:#198754,color:#0f3d24
+    class IN1,IN2 input
+    class m1,m2,m3,m4,m5,m6,w1,w2,w3,w4,w5,w6,w7 step
+    class OUT out
+```
+
+每个阶段的公式、分支（库存不足、金额阈值、业务约束）、错误码和异常规则见 [docs/calculation-logic.zh-CN.md](docs/calculation-logic.zh-CN.md)。
 
 ### 本地运行
 
